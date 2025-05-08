@@ -1,0 +1,61 @@
+<div id="detailedPatientHistoryReportContainer" class="no-print">
+    <hr class="bg-gray-600 opacity-2 no-print" />
+
+    <h4>Patient History</h4>
+    <div class="table-responsive">
+        <table id="detailedPatientHistoryTable" class="table table-bordered table-striped table-hover w-100">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Unit Price</th>
+                    <th>Qty.</th>
+                    <th>UOM</th>
+                    <th>Total Amt.</th>
+                    <th>Disc. %</th>
+                    <th>Disc. Amt.</th>
+                    <th>Sub Total</th>
+                    <th>Queue ID</th>
+                    <th>Branch</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <th class="text-end" colspan="7">Grand Total</th>
+                    <th class="text-end"></th>
+                    <th></th>
+                    <th class="text-end"></th>
+                    <th class="text-end"></th>
+                    <th colspan="2"></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<div id="printContainer" class="print-container text-black">
+    <table width="100%" class="table-print text-black">
+        <thead class="border-bottom border-dark">
+            <tr>
+                <td>
+                    <strong>{{ $branch->print_header }}</strong><br />
+                    <small>
+                        <span>{{ $branch->address }}</span><br />
+                        Tel1: <span>{{ $branch->tel_no }}</span>
+                    </small>
+                </td>
+            </tr>
+        </thead>
+    </table>
+    <br />
+    <div id="printBody"></div>
+    <br /><br />
+    <div>
+        <p class="text-black float-start">Verified By: ____________________________________</p>
+        <p class="float-end">Generated Date: {{ \Carbon\Carbon::now()->format('Y-m-d H:i') }}</p>
+    </div>
+    <br>
+</div>

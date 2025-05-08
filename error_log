@@ -1,0 +1,5 @@
+[14-Nov-2022 10:25:44 UTC] PHP Warning:  require(/home/sntcadmin/cms_web_app/vendor/autoload.php): failed to open stream: No such file or directory in /home/sntcadmin/cms_web_app/artisan on line 18
+[14-Nov-2022 10:25:44 UTC] PHP Fatal error:  require(): Failed opening required '/home/sntcadmin/cms_web_app/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php74/root/usr/share/pear') in /home/sntcadmin/cms_web_app/artisan on line 18
+[14-Nov-2022 10:26:11 UTC] PHP Warning:  require(/home/sntcadmin/cms_web_app/vendor/autoload.php): failed to open stream: No such file or directory in /home/sntcadmin/cms_web_app/artisan on line 18
+[14-Nov-2022 10:26:11 UTC] PHP Fatal error:  require(): Failed opening required '/home/sntcadmin/cms_web_app/vendor/autoload.php' (include_path='.:/opt/cpanel/ea-php74/root/usr/share/pear') in /home/sntcadmin/cms_web_app/artisan on line 18
+[10-Dec-2022 13:52:37 Asia/Singapore] PHP Fatal error:  Cannot declare class CreateStatesTable, because the name is already in use in /home/sntcadmin/cms_web_app/database/migrations/2022_11_01_164316_create_states_table.php on line 7
