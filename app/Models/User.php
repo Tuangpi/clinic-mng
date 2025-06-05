@@ -49,39 +49,43 @@ class User extends Authenticatable
     protected $appends = ['full_name'];
 
     /* Relationships */
-    public function branches() {
+    public function branches()
+    {
         return $this->belongsToMany(Branch::class)->withTimestamps();
     }
 
-    public function userRole() {
+    public function userRole()
+    {
         return $this->belongsTo(UserRole::class);
     }
-    
-    public function nationality() {
+
+    public function nationality()
+    {
         return $this->belongsTo(Nationality::class);
     }
 
     /* attributes */
-    public function getIsAdministratorAttribute() {
+    public function getIsAdministratorAttribute()
+    {
         return $this->attributes['user_role_id'] == UserRoleEnum::Administrator;
     }
-    
+
 
     public function getPhotoUrlAttribute()
     {
         if (!empty($this->attributes['photo_ext'])) {
-            $url = \Storage::disk('public')->url('user-profile/' . $this->attributes['id'] . '.' . $this->attributes['photo_ext'] . '?v=' . Carbon::parse($this->attributes['updated_at'])->format('dmYHiss'));
-        }
-        else {
+            $url = \Storage::disk('public')->url('profile/' . $this->attributes['id'] . '.' . $this->attributes['photo_ext'] . '?v=' . Carbon::parse($this->attributes['updated_at'])->format('dmYHiss'));
+        } else {
             $url = asset('/assets/images/new-user.png');
         }
         return $url;
     }
-    
-    public function getFullNameAttribute() {
+
+    public function getFullNameAttribute()
+    {
         return $this->first_name . ' ' . $this->last_name;
     }
-    
+
     /* Scopes */
     public function scopeHasAccess($query, $module)
     {
@@ -91,7 +95,7 @@ class User extends Authenticatable
     public function scopeHasCreatedUpdatedRecord($query, $id)
     {
         return $query->where('id', $id)
-                ->whereRaw("(
+            ->whereRaw("(
                     exists(Select 1 from appointment_categories where created_by = users.id or updated_by = users.id) or
                     exists(Select 1 from appointment_statuses where created_by = users.id or updated_by = users.id) or
                     exists(Select 1 from appointments where created_by = users.id or updated_by = users.id) or
@@ -146,22 +150,23 @@ class User extends Authenticatable
                     exists(Select 1 from user_roles where created_by = users.id or updated_by = users.id) or
                     exists(Select 1 from users where created_by = users.id or updated_by = users.id)
                 )")
-                ->Select(\DB::raw(1));
+            ->Select(\DB::raw(1));
     }
-    public function scopeActive($query) {
+    public function scopeActive($query)
+    {
         return $query
-        ->join('user_roles as r', 'r.id', 'users.user_role_id')
-        ->Select(
-            'users.id',
-            'users.code',
-            'users.username',
-            \DB::raw("concat(users.first_name, ' ', users.last_name) as name"),
-            'users.email',
-            'users.mobile_number',
-            'users.is_active',
-            'users.photo_ext',
-            'users.updated_at',
-            'r.description as role'
-        );
+            ->join('user_roles as r', 'r.id', 'users.user_role_id')
+            ->Select(
+                'users.id',
+                'users.code',
+                'users.username',
+                \DB::raw("concat(users.first_name, ' ', users.last_name) as name"),
+                'users.email',
+                'users.mobile_number',
+                'users.is_active',
+                'users.photo_ext',
+                'users.updated_at',
+                'r.description as role'
+            );
     }
 }

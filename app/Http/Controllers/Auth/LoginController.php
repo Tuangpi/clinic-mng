@@ -30,7 +30,7 @@ class LoginController extends Controller
      */
     protected $redirectTo = RouteServiceProvider::HOME;
 
-    
+
     public function username()
     {
         return 'username'; //or return the field which you want to use.
@@ -51,7 +51,7 @@ class LoginController extends Controller
         $branches = Branch::orderBy('description')->get();
         return view('auth.login', compact('branches'));
     }
-    
+
     protected function validateLogin(Request $request)
     {
         $this->validate($request, [
@@ -65,16 +65,16 @@ class LoginController extends Controller
     {
         return ['username' => $request->{$this->username()}, 'password' => $request->password, 'is_active' => true];
     }
-    
+
     protected function authenticated(Request $request, $user)
     {
-        $branch = !$user->is_administrator ? 
-                    $user->branches()->where('branch_id', $request->branch)->first()
-                    : Branch::find($request->branch);
+        $branch = !$user->is_administrator ?
+            $user->branches()->where('branch_id', $request->branch)->first()
+            : Branch::find($request->branch);
         if (!$branch) {
             $this->guard()->logout();
-        
-            return redirect('login')->withErrors(['username'=>'You\'re not allowed to access the selected branch']);
+
+            return redirect('login')->withErrors(['username' => 'You\'re not allowed to access the selected branch']);
         }
         session(['branch' => $branch]);
     }

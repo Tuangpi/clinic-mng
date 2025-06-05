@@ -21,7 +21,7 @@ class PatientController extends Controller
 {
     public function generalSetupIndex()
     {
-        return view('general-setup/patient'); 
+        return view('general-setup/patient');
     }
 
     /**
@@ -35,24 +35,24 @@ class PatientController extends Controller
             $currentBranch = session('branch');
 
             $data = Patient::active($request->branch, $currentBranch ? $currentBranch->id : null);
-                
+
             return Datatables::of($data)
-            ->filterColumn('name', function($query, $keyword) {
-                $query->whereRaw("concat(patients.first_name, ' ', patients.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('birth_date', function($query, $keyword) {
-                $query->whereRaw("DATE_FORMAT(birth_date, '%d/%m/%Y') like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('city', function($query, $keyword) {
-                $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('branch', function($query, $keyword) {
-                $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('available_credits', function($query, $keyword) {
-                $query->whereRaw("ac.amount like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('name', function ($query, $keyword) {
+                    $query->whereRaw("concat(patients.first_name, ' ', patients.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('birth_date', function ($query, $keyword) {
+                    $query->whereRaw("DATE_FORMAT(birth_date, '%d/%m/%Y') like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('city', function ($query, $keyword) {
+                    $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('branch', function ($query, $keyword) {
+                    $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('available_credits', function ($query, $keyword) {
+                    $query->whereRaw("ac.amount like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
 
         $titles = Title::orderBy('description')->get();
@@ -60,6 +60,7 @@ class PatientController extends Controller
         $nationalities = Nationality::orderBy('description')->get();
         $maritalStatuses = MaritalStatus::orderBy('description')->get();
         $states = State::orderBy('description')->get();
+        $cities = City::orderBy('description')->get();
         $yesNoUnknown = [
             [
                 'id' => 1,
@@ -77,8 +78,17 @@ class PatientController extends Controller
         $caseTypes = CaseType::orderBy('description')->get();
         $caseNoteTemplates = CaseNoteTemplate::forDropdown()->get();
 
-        return view('patients', compact('titles', 'genders', 'nationalities', 'maritalStatuses', 
-                                        'states', 'yesNoUnknown', 'caseTypes', 'caseNoteTemplates'));
+        return view('patients', compact(
+            'titles',
+            'genders',
+            'nationalities',
+            'maritalStatuses',
+            'states',
+            'cities',
+            'yesNoUnknown',
+            'caseTypes',
+            'caseNoteTemplates'
+        ));
     }
 
     /**
@@ -91,12 +101,12 @@ class PatientController extends Controller
     {
         try {
             if ($request->email && Patient::where('email', $request->email)->exists()) {
-                return response()->json(['errMsg'=> 'Email already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Email already exists', 'isError' => true]);
             }
             if ($request->nric && Patient::where('nric', $request->nric)->exists()) {
-                return response()->json(['errMsg'=> 'NRIC already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'NRIC already exists', 'isError' => true]);
             }
-            
+
             $currentBranch = session('branch');
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
@@ -116,20 +126,20 @@ class PatientController extends Controller
                 $q->patient_id = $p->id;
                 $q->time_in = Carbon::now();
                 $q->save();
-                
+
                 if (empty($q->code)) {
                     $q->code = 'QU-' . sprintf('%02d', $q->branch_id) . '-' . sprintf('%05d', $q->id);
                     $q->save();
                 }
             }
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New patient has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New patient has been created.']);
     }
 
     /**
@@ -144,14 +154,14 @@ class PatientController extends Controller
             $currentBranch = session('branch');
 
             $p = Patient::with([
-                'title:id,description', 
-                'gender:id,description', 
-                'nationality:id,description', 
+                'title:id,description',
+                'gender:id,description',
+                'nationality:id,description',
                 'maritalStatus:id,description',
                 'city:id,description,state_id',
                 'city.state:id,description'
-                ])->find($id);
-                
+            ])->find($id);
+
             $credits = 0;
             if ($currentBranch) {
                 $ac = PatientAvailableCredit::where([
@@ -162,11 +172,9 @@ class PatientController extends Controller
                 if ($ac) {
                     $credits = $ac->amount;
                 }
-
             }
-        
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['patient' => $p, 'credits' => $credits == 0 ? '0.00' : $credits]);
     }
@@ -182,7 +190,7 @@ class PatientController extends Controller
         try {
             $p = Patient::with('city:id,state_id')->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['patient' => $p]);
     }
@@ -201,15 +209,15 @@ class PatientController extends Controller
                 ['email', $request->email],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Email already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Email already exists', 'isError' => true]);
             }
             if ($request->nric && Patient::where([
                 ['nric', $request->nric],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'NRIC already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'NRIC already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $p = Patient::find($id);
@@ -217,14 +225,14 @@ class PatientController extends Controller
             $this->mapValues($p, $request);
 
             $p->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Patient has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Patient has been updated.']);
     }
 
     /**
@@ -236,17 +244,17 @@ class PatientController extends Controller
     public function destroy($id)
     {
         $p = Patient::find($id);
-        
+
         if ($p->queues()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this patient has already a transaction record.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this patient has already a transaction record.', 'isError' => true]);
         }
-        
+
         if ($p->appointments()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this patient has already an appointment record.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this patient has already an appointment record.', 'isError' => true]);
         }
 
         $p->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function label($id)
@@ -254,7 +262,7 @@ class PatientController extends Controller
         try {
             $p = Patient::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json([
             'code' => $p->code,
@@ -270,8 +278,7 @@ class PatientController extends Controller
             'zipCode' => $p->zip_code,
             'allergy' => ($p->has_drug_allergies) ? 'YES' . ' (' . $p->drug_allergies . ')' : 'NO',
             'nationality' => $p->nationality->description ?? ''
-                                ]);
-
+        ]);
     }
 
     public function visits(Request $request, $patientId)
@@ -281,10 +288,10 @@ class PatientController extends Controller
             $branchId = $currentBranch ? $currentBranch->id : null;
             $data = \App\Models\Queue::activeByPatient($branchId, $patientId);
             return Datatables::of($data)
-            ->filterColumn('status', function($query, $keyword) {
-                $query->whereRaw("s.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('status', function ($query, $keyword) {
+                    $query->whereRaw("s.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
 
@@ -309,7 +316,7 @@ class PatientController extends Controller
         $p->has_food_allergies = $request->hasFoodAllergies == 0 ? null : ($request->hasFoodAllergies == 1);
         $p->food_allergies = $request->foodAllergies;
         $p->notes = $request->notes;
-        
+
 
         $p->save();
 

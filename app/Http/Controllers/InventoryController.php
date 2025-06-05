@@ -18,7 +18,7 @@ class InventoryController extends Controller
 {
     public function generalSetupIndex()
     {
-        return view('general-setup/inventory'); 
+        return view('general-setup/inventory');
     }
     /**
      * Display a listing of the resource.
@@ -31,21 +31,21 @@ class InventoryController extends Controller
         $branchId = $currentBranch ? $currentBranch->id : null;
         if ($request->ajax()) {
             $data = Product::active($branchId, $request->type, $request->category, $request->critical);
-                
+
             return Datatables::of($data)
-            ->filterColumn('uom', function($query, $keyword) {
-                $query->whereRaw("u.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('type', function($query, $keyword) {
-                $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('category', function($query, $keyword) {
-                $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('branch', function($query, $keyword) {
-                $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('uom', function ($query, $keyword) {
+                    $query->whereRaw("u.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('type', function ($query, $keyword) {
+                    $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('category', function ($query, $keyword) {
+                    $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('branch', function ($query, $keyword) {
+                    $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
 
         $types = ProductType::forDropdown()->get();
@@ -56,7 +56,7 @@ class InventoryController extends Controller
         $frequencies = Frequency::forDropdown()->get();
         $suppliers = Supplier::forDropdown(true)->get();
         $manufacturers = Supplier::forDropdown(false)->get();
-        return view('inventory-setup/inventory', compact('types', 'categories', 'uoms', 'usages', 'dosages', 'frequencies', 'suppliers', 'manufacturers')); 
+        return view('inventory-setup/inventory', compact('types', 'categories', 'uoms', 'usages', 'dosages', 'frequencies', 'suppliers', 'manufacturers'));
     }
 
     /**
@@ -70,9 +70,9 @@ class InventoryController extends Controller
         try {
             $currentBranch = session('branch');
             if ($request->code && Product::where([['code2', $request->code], ['branch_id', $currentBranch->id]])->exists()) {
-                return response()->json(['errMsg'=> 'Code already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Code already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -82,14 +82,14 @@ class InventoryController extends Controller
             $p->updated_by = $currentUserId;
             $p->current_stock = 0;
             $this->mapValues($p, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New item has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New item has been created.']);
     }
 
     /**
@@ -102,20 +102,20 @@ class InventoryController extends Controller
     {
         try {
             $p = Product::with([
-                'productType:id,description', 
-                'productCategory:id,description', 
-                'uom:id,description', 
-                'usage:id,description', 
-                'dosage:id,description', 
-                'dosageUom:id,description', 
-                'frequency:id,description', 
+                'productType:id,description',
+                'productCategory:id,description',
+                'uom:id,description',
+                'usage:id,description',
+                'dosage:id,description',
+                'dosageUom:id,description',
+                'frequency:id,description',
                 'supplier:id,name',
                 'manufacturer:id,name',
                 'creator:id,first_name,last_name',
                 'updator:id,first_name,last_name'
-                ])->find($id);
+            ])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['product' => $p]);
     }
@@ -131,7 +131,7 @@ class InventoryController extends Controller
         try {
             $p = Product::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['product' => $p]);
     }
@@ -146,31 +146,31 @@ class InventoryController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $p = Product::find($id);
-            
+
             if ($request->code && Product::where([
                 ['code2', $request->code],
                 ['branch_id', $p->branch_id],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Code already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Code already exists', 'isError' => true]);
             }
 
             $p->updated_by = \Auth::id();
             $this->mapValues($p, $request);
 
             $p->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Product has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Product has been updated.']);
     }
 
     /**
@@ -184,13 +184,12 @@ class InventoryController extends Controller
         $p = Product::find($id);
 
         if ($p->packageProducts()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this item is used in a package.', 'isError'=> true]);
-        }
-        else if ($p->transactions()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this item is used in a transaction.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this item is used in a package.', 'isError' => true]);
+        } else if ($p->transactions()->exists()) {
+            return response()->json(['errMsg' => 'Unable to delete, this item is used in a transaction.', 'isError' => true]);
         }
         $p->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($p, $request)
@@ -223,7 +222,7 @@ class InventoryController extends Controller
             $p->frequency_id = null;
             $p->total_dosage = null;
         }
-        
+
         $p->save();
 
         $p->code = 'PR-' . sprintf('%02d', $p->branch_id) . '-' . sprintf('%05d', $p->id) . '-' . $p->code2;

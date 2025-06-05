@@ -206,7 +206,9 @@
                                 <div class="col-md-8">
                                     <select id="city" name="city" class="form-select form-select-sm" data-parsley-errors-container="#city-error">
                                         <option value="" disabled selected></option>
-                                      
+                                        @foreach ($cities as $city)
+                                        <option value="{{ $city->id }}">{{ $city->description }}</option>
+                                        @endforeach
                                     </select>
                                     <div id="city-error"></div>
                                 </div>

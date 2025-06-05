@@ -8,27 +8,17 @@
 
 @section('body')
 
-<div class="login login-with-news-feed">
+<div class="login login-with-news-feed responsive-login">
 
-    <div class="news-feed">
-        <div class="news-image" style="background-image: url({{ asset('/assets/images/login-bg.jpg') }})"></div>
+    <div class="brand">
+        <img src="{{ asset('/assets/images/logo.png') }}" class="login-logo mx-auto d-block">
     </div>
-
-
-    <div class="login-container">
-
-        <div class="brand">
-            <img src="{{ asset('/assets/images/logo.png') }}" class="login-logo mx-auto d-block">
+    <div class="login-content">
+        @yield('content')
+        <div class="text-blue-900 text-center  mb-0">
+            &copy; 2025 Accuken Pte Ltd
         </div>
-        <div class="login-content">
-            @yield('content')
-            <div class="text-blue-900 text-center  mb-0">
-                &copy; 2022 Dr. Chio Aesthetic & Laser Centre
-            </div>
-        </div>
-
     </div>
-
 </div>
 </div>
 @endsection

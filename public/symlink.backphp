@@ -1,5 +1,0 @@
-<?php
-
-symlink('/var/www/cms_web_app_sg/storage/app/public', '/var/www/html/cms-sg/storage');
-
-?>

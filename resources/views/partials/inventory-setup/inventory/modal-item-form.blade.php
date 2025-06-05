@@ -41,10 +41,10 @@
                                 <div class="col-md-6">
                                     <div class="row">
                                         <label
-                                            class="form-label col-form-label col-form-label-sm col-md-4 required">Item Code</label>
+                                            class="form-label col-form-label col-form-label-sm col-md-4">Item Code</label> <!-- required-->
                                         <div class="col-md-8">
                                             <input id="code" name="code" type="text"
-                                                class="form-control form-control-sm" placeholder="Item Code" required/>
+                                                class="form-control form-control-sm" placeholder="Item Code"/>
                                         </div>
                                     </div>
                                 </div>
@@ -53,11 +53,11 @@
                                 <div class="col-md-12">
                                     <div class="row">
                                         <label
-                                            class="form-label col-form-label col-form-label-sm col-md-2 required">Item
-                                            Name</label>
+                                            class="form-label col-form-label col-form-label-sm col-md-2">Item
+                                            Name</label> <!-- required-->
                                         <div class="col-md-10">
                                             <input id="name" name="name" type="text"
-                                                class="form-control form-control-sm" placeholder="Item Name" required />
+                                                class="form-control form-control-sm" placeholder="Item Name" />
                                         </div>
                                     </div>
                                 </div>
@@ -66,9 +66,9 @@
                                 <div class="col-md-6">
                                     <div class="row">
                                         <label
-                                            class="form-label col-form-label col-form-label-sm col-md-4 required">Type</label>
+                                            class="form-label col-form-label col-form-label-sm col-md-4">Type</label> <!--required-->
                                         <div class="col-md-8">
-                                            <select id="type" name="type" class="form-select form-select-sm" required
+                                            <select id="type" name="type" class="form-select form-select-sm"
                                                 data-parsley-errors-container="#type-error">
                                                 <option value="" disabled selected></option>
                                                 @foreach ($types as $type)
@@ -82,10 +82,10 @@
                                 <div class="col-md-6">
                                     <div class="row">
                                         <label
-                                            class="form-label col-form-label col-form-label-sm col-md-4 required">Category</label>
+                                            class="form-label col-form-label col-form-label-sm col-md-4">Category</label> <!--required-->
                                         <div class="col-md-8">
                                             <select id="category" name="category" class="form-select form-select-sm"
-                                                required data-parsley-errors-container="#category-error">
+                                                 data-parsley-errors-container="#category-error">
                                                 <option value="" disabled selected></option>
                                                 @foreach ($categories as $category)
                                                 <option value="{{ $category->id }}">{{ $category->description }}
@@ -101,9 +101,9 @@
                                 <div class="col-md-6">
                                     <div class="row">
                                         <label
-                                            class="form-label col-form-label col-form-label-sm col-md-4 required">UOM</label>
+                                            class="form-label col-form-label col-form-label-sm col-md-4">UOM</label> <!--required-->
                                         <div class="col-md-8">
-                                            <select id="uom" name="uom" class="form-select form-select-sm" required
+                                            <select id="uom" name="uom" class="form-select form-select-sm"
                                                 data-parsley-errors-container="#uom-error">
                                                 <option value="" disabled selected></option>
                                                 @foreach ($uoms as $uom)
@@ -218,21 +218,21 @@
                     <div class="row mb-2">
                         <div class="col-md-6">
                             <div class="row">
-                                <label class="form-label col-form-label col-form-label-sm col-md-3 required">Selling
-                                    Price</label>
+                                <label class="form-label col-form-label col-form-label-sm col-md-3">Selling
+                                    Price</label> <!-- required-->
                                 <div class="col-md-9">
                                     <input id="sellingPrice" name="sellingPrice" type="text"
-                                        class="form-control form-control-sm" placeholder="Selling price" required />
+                                        class="form-control form-control-sm" placeholder="Selling price"  />
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
-                                <label class="form-label col-form-label col-form-label-sm col-md-3 required">Cost
-                                    Price</label>
+                                <label class="form-label col-form-label col-form-label-sm col-md-3">Cost
+                                    Price</label> <!-- required-->
                                 <div class="col-md-9">
                                     <input id="costPrice" name="costPrice" type="text"
-                                        class="form-control form-control-sm" placeholder="Cost price" required />
+                                        class="form-control form-control-sm" placeholder="Cost price" />
                                 </div>
                             </div>
                         </div>
@@ -242,9 +242,9 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <label
-                                    class="form-label col-form-label col-form-label-sm col-md-3 required">Supplier</label>
+                                    class="form-label col-form-label col-form-label-sm col-md-3">Supplier</label> <!-- required-->
                                 <div class="col-md-9">
-                                    <select id="supplier" name="supplier" class="form-select form-select-sm" required
+                                    <select id="supplier" name="supplier" class="form-select form-select-sm"
                                         data-parsley-errors-container="#supplier-error">
                                         <option value="" disabled selected></option>
                                         @foreach ($suppliers as $supplier)
@@ -258,10 +258,10 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <label
-                                    class="form-label col-form-label col-form-label-sm col-md-3 required">Manufacturer</label>
+                                    class="form-label col-form-label col-form-label-sm col-md-3">Manufacturer</label> <!-- required-->
                                 <div class="col-md-9">
                                     <select id="manufacturer" name="manufacturer" class="form-select form-select-sm"
-                                        required data-parsley-errors-container="#manufacturer-error">
+                                         data-parsley-errors-container="#manufacturer-error">
                                         <option value="" disabled selected></option>
                                         @foreach ($manufacturers as $manufacturer)
                                         <option value="{{ $manufacturer->id }}">{{ $manufacturer->name }}
@@ -278,17 +278,17 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <label
-                                    class="form-label col-form-label col-form-label-sm col-md-3 required">Critical Level</label>
+                                    class="form-label col-form-label col-form-label-sm col-md-3">Critical Level</label> <!-- required-->
                                 <div class="col-md-9">
                                     <input id="criticalLevel" name="criticalLevel" type="text"
-                                        class="form-control form-control-sm" placeholder="Critical Level" required />
+                                        class="form-control form-control-sm" placeholder="Critical Level" />
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="row">
                                 <label
-                                    class="form-label col-form-label col-form-label-sm col-md-3 required">Status</label>
+                                    class="form-label col-form-label col-form-label-sm col-md-3">Status</label> <!-- required-->
                                 <div class="col-md-9">
                                     <select id="status" name="status" class="form-select form-select-sm">
                                         <option value="1" selected>Active</option>

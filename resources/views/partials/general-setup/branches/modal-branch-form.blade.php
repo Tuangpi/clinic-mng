@@ -87,7 +87,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-2">
+                        <!-- <div class="col-md-6 mb-2">
                             <div class="row">
                                 <label
                                     class="form-label col-form-label col-form-label-sm col-md-3">City</label>
@@ -100,7 +100,7 @@
                                     <div id="city-error"></div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="col-lg-6 mb-2">
                             <div class="row">
                                 <label class="form-label col-form-label col-form-label-sm col-md-4">Postal/Zip Code</label>

@@ -15,7 +15,7 @@
                 <div class="menu-item">
                     <a href="{{ route('patients.index') }}" class="menu-link">
                         <div class="menu-icon">
-                            <i class="fa fa-user-group"></i>
+                            <i class="fa-solid fa-users"></i>
                         </div>
                         <div class="menu-text">All Patients</div>
                     </a>
@@ -25,7 +25,7 @@
                 <div class="menu-item">
                     <a href="{{ route('appointment.index') }}" class="menu-link">
                         <div class="menu-icon">
-                            <i class="fa fa-calendar-days"></i>
+                            <i class="fa-solid fa-calendar-check"></i>
                         </div>
                         <div class="menu-text">Appointment</div>
                     </a>
@@ -35,7 +35,7 @@
                 <div class="menu-item">
                     <a href="{{ route('queue.index') }}" class="menu-link">
                         <div class="menu-icon">
-                            <i class="fa fa-clock"></i>
+                            <i class="fa-solid fa-stopwatch"></i>
                         </div>
                         <div class="menu-text">Queue</div>
                     </a>
@@ -45,7 +45,7 @@
             <div class="menu-item has-sub">
                 <a href="#" class="menu-link">
                     <div class="menu-icon">
-                        <i class="fa fa-clipboard-list"></i>
+                        <i class="fa-solid fa-clipboard"></i>
                     </div>
                     <div class="menu-text">Inventory Setup</div>
                     <div class="menu-caret"></div>
@@ -80,7 +80,7 @@
             <div class="menu-item has-sub">
                 <a href="#" class="menu-link">
                     <div class="menu-icon">
-                        <i class="fa fa-boxes-stacked"></i>
+                        <i class="fa-solid fa-box"></i>
                     </div>
                     <div class="menu-text">Stock Management</div>
                     <div class="menu-caret"></div>
@@ -106,7 +106,7 @@
             <div class="menu-item has-sub">
                 <a href="#" class="menu-link">
                     <div class="menu-icon">
-                        <i class="fa fa-file-lines"></i>
+                        <i class="fa-solid fa-file"></i>
                     </div>
                     <div class="menu-text">Reports</div>
                     <div class="menu-caret"></div>
@@ -139,7 +139,7 @@
             <div class="menu-item has-sub">
                 <a href="#" class="menu-link">
                     <div class="menu-icon">
-                        <i class="fa fa-screwdriver-wrench"></i>
+                        <i class="fa-solid fa-gears"></i>
                     </div>
                     <div class="menu-text">General Setup</div>
                     <div class="menu-caret"></div>

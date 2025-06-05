@@ -10,6 +10,7 @@
     <title>{{ config('app.name', 'Laravel') }} | @yield('title')</title>
     <link href='https://fonts.googleapis.com/css?family=Open Sans' rel='stylesheet'>
     <link href="{{ mix('/assets/css/app.css') }}" rel="stylesheet" />
+    <link rel="icon" href="/favicon1.ico?v=2" type="image/x-icon" />
     @yield('mainStyles')
 
 </head>
@@ -30,7 +31,7 @@
     </div>
 
     <script type="text/javascript" src="{{ mix('/assets/js/app.js') }}"></script>
-    
+
     <script type="text/javascript">
         var _rootUrl = '{{url(config('app.url'))}}'
     </script>

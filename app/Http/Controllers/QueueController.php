@@ -26,6 +26,7 @@ use App\Models\PatientAvailableCredit;
 use App\Models\ViewQueueItem;
 
 use DataTables;
+
 class QueueController extends Controller
 {
     /**
@@ -39,15 +40,15 @@ class QueueController extends Controller
         $branchId = $currentBranch ? $currentBranch->id : null;
         if ($request->ajax()) {
             $data = Queue::active($branchId, $request->date, $request->status);
-                
+
             return Datatables::of($data)
-            ->filterColumn('patient', function($query, $keyword) {
-                $query->whereRaw("concat(p.code, ' - ', p.first_name, ' ', p.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('status', function($query, $keyword) {
-                $query->whereRaw("s.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('patient', function ($query, $keyword) {
+                    $query->whereRaw("concat(p.code, ' - ', p.first_name, ' ', p.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('status', function ($query, $keyword) {
+                    $query->whereRaw("s.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
 
         $patients = Patient::forDropdown()->get();
@@ -55,7 +56,7 @@ class QueueController extends Controller
         $productTypes = ProductType::forDropdown()->get();
         $productCategories = ProductCategory::forDropdown()->get();
         $paymentOptions = PaymentOption::forDropdown($branchId)->get();
-        
+
         $defaultDate = '';
         $defaultId = '';
         if ($request->id) {
@@ -86,14 +87,14 @@ class QueueController extends Controller
             $q->created_by = \Auth::id();
             $q->updated_by = \Auth::id();
             $this->mapValues($q, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New queue has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New queue has been created.']);
     }
 
     /**
@@ -113,36 +114,32 @@ class QueueController extends Controller
                     $details = '';
                     if ($q->is_draft) {
                         if ($trans->incomplete_transaction_id) {
-                            $details = $trans->parentIncompleteTransaction->queueTransaction->packageProducts->map(function($pp) {
+                            $details = $trans->parentIncompleteTransaction->queueTransaction->packageProducts->map(function ($pp) {
                                 $prod = $pp->product ?? Product::withTrashed()->find($pp->product_id);
-                                return ($pp->qty ? number_format($pp->qty, 2) . ' ' : '') . $pp->name. ($prod->is_stock_unlimited ? '' : ' (' . number_format($prod->current_stock, 2) . ')');
+                                return ($pp->qty ? number_format($pp->qty, 2) . ' ' : '') . $pp->name . ($prod->is_stock_unlimited ? '' : ' (' . number_format($prod->current_stock, 2) . ')');
                             })->implode(', ') . ': ' . $trans->parentIncompleteTransaction->session_count . ' session' . ($trans->parentIncompleteTransaction->session_count > 1 ? 's' : '');
-                        }
-                        else {
+                        } else {
                             $p = Package::find($trans->package_id);
                             $trans->session_count = $p->session_count;
-                            $details = $p->packageProducts->map(function($pp) {
+                            $details = $p->packageProducts->map(function ($pp) {
                                 $prod = $pp->product ?? Product::withTrashed()->find($pp->product_id);
                                 return ($pp->qty ? number_format($pp->qty, 2) . ' ' : '') . $prod->name . ($prod->is_stock_unlimited ? '' : ' (' . number_format($prod->current_stock, 2) . ')');
                             })->implode(', ') . ': ' . $p->session_count . ' session' . ($p->session_count > 1 ? 's' : '');
                         }
-                    }
-                    else {
-                        $details = $trans->packageProducts->map(function($pp) {
+                    } else {
+                        $details = $trans->packageProducts->map(function ($pp) {
                             $prod = $pp->product ?? Product::withTrashed()->find($pp->product_id);
                             return ($pp->qty ? number_format($pp->qty, 2) . ' ' : '') . $pp->name;
                         })->implode(', ') . ': ' . $trans->session_count . ' session' . ($trans->session_count > 1 ? 's' : '');
                     }
                     $trans->package_details = $details;
                     $trans->uom = '';
-                }
-                else{
+                } else {
                     $trans->package_details = '';
                     if ($trans->product_id) {
                         $prod = $trans->product ?? Product::withTrashed()->find($trans->product_id);
                         $trans->uom = $prod->uom->description;
                     }
-
                 }
             }
             $payments = QueuePayment::with('paymentOption:id,description')->where('queue_id', $id)->get();
@@ -155,33 +152,33 @@ class QueueController extends Controller
             if ($ac) {
                 $availableCredit = $ac->amount;
             }
-    
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
-        return response()->json(['isDraft' => $q->is_draft, 
-                                    'currencySymbol' => $q->branch->currency_symbol,
-                                    'notes' => $q->notes, 
-                                    'refNo' => $q->ref_no, 
-                                    'doctor' => $q->attending_doctor, 
-                                    'transactionRemarks' => $q->transaction_remarks, 
-                                    'includeInvoiceRemarks' => $q->include_invoice_remarks, 
-                                    'transactions' => $transactions, 
-                                    'payments' => $payments, 
-                                    'sessionBalanceCount' => $sessionBalanceCount,
-                                    'foodAllergies' => $q->patient->food_allergies, 
-                                    'drugAllergies' => $q->patient->drug_allergies,
-                                    'overallDiscPercentage' => $q->overall_disc_percentage,
-                                    'overallDiscAmount' => $q->overall_disc_amount,
-                                    'availableCredit' => $availableCredit,
-                                    'pxCredit' => $q->px_credit,
-                                    'preTotalAmount' => $q->pre_total_amount,
-                                    'prePaidAmount' => $q->pre_paid_amount,
-                                    'totalAmount' => $q->total_amount,
-                                    'paidAmount' => $q->paid_amount,
-                                    'totalAmountBeforePxCredit' => $q->total_amount_before_px_credit,
-                                    'paidAmountBeforePxCredit' => $q->paid_amount_before_px_credit,
-                                ]);
+        return response()->json([
+            'isDraft' => $q->is_draft,
+            'currencySymbol' => $q->branch->currency_symbol,
+            'notes' => $q->notes,
+            'refNo' => $q->ref_no,
+            'doctor' => $q->attending_doctor,
+            'transactionRemarks' => $q->transaction_remarks,
+            'includeInvoiceRemarks' => $q->include_invoice_remarks,
+            'transactions' => $transactions,
+            'payments' => $payments,
+            'sessionBalanceCount' => $sessionBalanceCount,
+            'foodAllergies' => $q->patient->food_allergies,
+            'drugAllergies' => $q->patient->drug_allergies,
+            'overallDiscPercentage' => $q->overall_disc_percentage,
+            'overallDiscAmount' => $q->overall_disc_amount,
+            'availableCredit' => $availableCredit,
+            'pxCredit' => $q->px_credit,
+            'preTotalAmount' => $q->pre_total_amount,
+            'prePaidAmount' => $q->pre_paid_amount,
+            'totalAmount' => $q->total_amount,
+            'paidAmount' => $q->paid_amount,
+            'totalAmountBeforePxCredit' => $q->total_amount_before_px_credit,
+            'paidAmountBeforePxCredit' => $q->paid_amount_before_px_credit,
+        ]);
     }
 
     /**
@@ -194,14 +191,14 @@ class QueueController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
             $userId = \Auth::id();
 
             $q = Queue::find($id);
             $q->updated_by = $userId;
             $isDraft = $q->is_draft;
-           
+
             $q->notes = $request->notes;
             $q->ref_no = $request->refNo;
             $q->attending_doctor = $request->doctor;
@@ -237,9 +234,9 @@ class QueueController extends Controller
                         }
                     }
                 }
-                
+
                 if (!empty($request->transactions)) {
-                    
+
                     $tIds = collect($request->transactions)->pluck('id');
                     $q->transactions()->whereNotIn('id', $tIds)->delete();
 
@@ -252,8 +249,7 @@ class QueueController extends Controller
                             $t = new QueueTransaction;
                             $t->queue_id = $id;
                             $t->created_by = $userId;
-                        }
-                        else {
+                        } else {
                             $t = QueueTransaction::find($trans['id']);
                         }
 
@@ -281,7 +277,7 @@ class QueueController extends Controller
                         }
 
                         if (!$q->is_draft) {
-                            
+
                             if ($t->product_id) {
                                 $p = Product::withTrashed()->find($t->product_id);
                                 $t->uom = $p->uom->description;
@@ -294,13 +290,11 @@ class QueueController extends Controller
                                     $p->current_stock -= $t->qty;
                                     $p->save();
                                 }
-                            }
-                            else if ($t->package_id) {
+                            } else if ($t->package_id) {
                                 if ($t->incomplete_transaction_id) {
                                     $icParent = QueueTransaction::find($ic->queue_transaction_id);
                                     $packageProducts = $icParent->packageProducts;
-                                }
-                                else {
+                                } else {
                                     $p = Package::find($t->package_id);
                                     $packageProducts = $p->packageProducts;
                                 }
@@ -327,13 +321,11 @@ class QueueController extends Controller
                                     $qtp->save();
                                 }
                             }
-                            
+
                             if ($t->session_count > 0 || $t->incomplete_transaction_id || (!$t->incomplete_transaction_id && $t->sub_total > $t->amount_to_pay)) {
                                 if ($t->incomplete_transaction_id) {
                                     $ic->remaining_session = $t->session_count == 0 ? 0 : $t->session_count - ($t->is_session_used);
-
-                                }
-                                else {
+                                } else {
                                     $ic = new IncompleteTransaction;
                                     $ic->created_by = $userId;
                                     $ic->queue_transaction_id = $t->id;
@@ -346,26 +338,26 @@ class QueueController extends Controller
                                     $ic->price = $t->total_amount;
                                 }
                                 $ic->updated_by = $userId;
-                                
+
                                 $remainingBalance = $t->sub_total - $t->amount_to_pay;
                                 $fromOverallDiscount = 0;
                                 $fromPxCredit = 0;
-                                
+
                                 if ($overallDiscAmount > 0) {
                                     $fromOverallDiscount = $overallDiscAmount <= $remainingBalance ? $overallDiscAmount : $remainingBalance;
                                     $overallDiscAmount -= $fromOverallDiscount;
                                     $remainingBalance -= $fromOverallDiscount;
                                 }
-                                
+
                                 if ($pxCredit > 0) {
                                     $fromPxCredit = $pxCredit <= $remainingBalance ? $pxCredit : $remainingBalance;
                                     $pxCredit -= $fromPxCredit;
                                     $remainingBalance -= $fromPxCredit;
                                 }
-                                
+
                                 $ic->remaining_balance = $remainingBalance;
                                 $ic->save();
-                                
+
                                 $t->from_overall_discount = $fromOverallDiscount;
                                 $t->from_px_credit = $fromPxCredit;
                                 $t->session_count = $ic->session_count;
@@ -373,18 +365,15 @@ class QueueController extends Controller
                                     $t->session_no = $ic->session_count - $ic->remaining_session;
                                 }
                                 $t->save();
-
                             }
                         }
-                        
                     }
-                }
-                else {
+                } else {
                     $q->transactions()->delete();
                 }
 
                 if (!empty($request->payments)) {
-                    
+
                     $pIds = collect($request->payments)->pluck('id');
                     $q->payments()->whereNotIn('id', $pIds)->delete();
 
@@ -395,8 +384,7 @@ class QueueController extends Controller
                             $p = new QueuePayment;
                             $p->queue_id = $id;
                             $p->created_by = \Auth::id();
-                        }
-                        else {
+                        } else {
                             $p = QueuePayment::find($payment['id']);
                         }
 
@@ -405,23 +393,21 @@ class QueueController extends Controller
                         $p->remarks = $payment['remarks'];
                         $p->updated_by = \Auth::id();
                         $p->save();
-                        
                     }
-                }
-                else {
+                } else {
                     $q->payments()->delete();
                 }
             }
 
             $q->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Transaction has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Transaction has been updated.']);
     }
     /**
      * Remove the specified resource from storage.
@@ -433,10 +419,10 @@ class QueueController extends Controller
     {
         $q = Queue::find($id);
         $q->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
-    
+
     public function void($id)
     {
         $q = Queue::find($id);
@@ -444,7 +430,7 @@ class QueueController extends Controller
         $q->voided_date = Carbon::now();
         $q->voided_by = \Auth::id();
         $q->save();
-        
+
         if ($q->px_credit) {
             $ac = PatientAvailableCredit::where([
                 ['patient_id', $q->patient_id],
@@ -463,8 +449,7 @@ class QueueController extends Controller
                     $p->current_stock += $t->qty;
                     $p->save();
                 }
-            }
-            else if ($t->package_id) {
+            } else if ($t->package_id) {
                 foreach ($t->packageProducts as $pp) {
                     if (($t->session_count > 0 && $t->is_session_used) || ($t->session_count == 0 && !$t->incomplete_transaction_id)) {
                         $prod = $pp->product;
@@ -473,7 +458,7 @@ class QueueController extends Controller
                     }
                 }
             }
-            
+
             if ($t->incompleteTransaction && $t->incompleteTransaction->transactions->count() == 0) {
                 $t->incompleteTransaction->delete();
             }
@@ -494,13 +479,13 @@ class QueueController extends Controller
         }
 
 
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function updateTimeIn(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $q = Queue::find($id);
@@ -509,20 +494,20 @@ class QueueController extends Controller
             $q->time_in = Carbon::parse($request->time);
 
             $q->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Time in has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Time in has been updated.']);
     }
 
     public function updateTimeOut(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $q = Queue::find($id);
@@ -530,20 +515,20 @@ class QueueController extends Controller
             $q->time_out = Carbon::parse($request->time);
 
             $q->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Time out has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Time out has been updated.']);
     }
 
     public function updateNotes(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $q = Queue::find($id);
@@ -551,20 +536,20 @@ class QueueController extends Controller
             $q->notes = $request->notes;
 
             $q->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Notes has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Notes has been updated.']);
     }
 
     public function updateStatus($id, $statusId)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $q = Queue::find($id);
@@ -578,23 +563,23 @@ class QueueController extends Controller
             }
 
             $q->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Queue status has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Queue status has been updated.']);
     }
 
     public function getItems(Request $request)
     {
         if ($request->ajax()) {
             $data = ViewQueueItem::active(session('branch')->id, $request->type, $request->category);
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -602,15 +587,15 @@ class QueueController extends Controller
     {
         if ($request->ajax()) {
             $data = IncompleteTransaction::forQueue(session('branch')->id, $patientId);
-                
+
             return Datatables::of($data)
-            ->filterColumn('type', function($query, $keyword) {
-                $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('category', function($query, $keyword) {
-                $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('type', function ($query, $keyword) {
+                    $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('category', function ($query, $keyword) {
+                    $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
 
@@ -621,7 +606,7 @@ class QueueController extends Controller
             $branch = $q->branch;
             $patient = $q->patient;
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json([
             'branch' => $branch->print_header,
@@ -640,8 +625,7 @@ class QueueController extends Controller
             'doctor' => $q->attending_doctor,
             'remarks' => $q->include_invoice_remarks ? $q->transaction_remarks : '',
             'isDraft' => $q->is_draft
-                                ]);
-
+        ]);
     }
 
     public function updateItemLabel($id, Request $request)
@@ -673,18 +657,17 @@ class QueueController extends Controller
                     $t->frequency_id = $item['frequency'];
                     $t->save();
                 }
-                
             }
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
         $uoms = Uom::forDropdown()->get();
         $usages = Usage::forDropdown()->get();
         $dosages = Dosage::forDropdown()->get();
         $frequencies = Frequency::forDropdown()->get();
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Label has been updated.', 'ids' => $ids]);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Label has been updated.', 'ids' => $ids]);
     }
 
     public function editItemLabel($id, Request $request)
@@ -700,7 +683,7 @@ class QueueController extends Controller
 
             if (!empty($request->trIds)) {
                 foreach ($request->trIds as $id) {
-                    
+
                     $tr = QueueTransaction::find($id);
                     if ($tr->package_id) {
                         foreach ($tr->packageProducts as $packageProduct) {
@@ -716,8 +699,7 @@ class QueueController extends Controller
                                 'frequency' => $packageProduct->frequency_id,
                             ];
                         }
-                    }
-                    else {
+                    } else {
                         $prod = $tr->product;
                         $items[] = [
                             'trId' => $tr->id,
@@ -751,12 +733,12 @@ class QueueController extends Controller
 
             if (!empty($request->packIds)) {
                 foreach ($request->packIds as $id) {
-                    
+
                     $package = Package::find($id);
 
                     foreach ($package->packageProducts as $packageProduct) {
                         $prod = $packageProduct->product;
-        
+
                         $items[] = [
                             'trId' => '',
                             'trProductId' => '',
@@ -771,16 +753,14 @@ class QueueController extends Controller
                     }
                 }
             }
-
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         $uoms = Uom::forDropdown()->get();
         $usages = Usage::forDropdown()->get();
         $dosages = Dosage::forDropdown()->get();
         $frequencies = Frequency::forDropdown()->get();
-        return view('partials/queue/item-label-form', compact('items', 'uoms', 'usages', 'dosages', 'frequencies', 'branch', 'branchAddress', 'patient')); 
-
+        return view('partials/queue/item-label-form', compact('items', 'uoms', 'usages', 'dosages', 'frequencies', 'branch', 'branchAddress', 'patient'));
     }
 
     public function itemLabel($id, Request $request)
@@ -803,8 +783,7 @@ class QueueController extends Controller
                                 'dosage' => ($packageProduct->usage->description ?? '') . ' ' . ($packageProduct->dosage->description ?? '') . ' ' . ($packageProduct->dosageUom->description ?? '') . ' ' . ($packageProduct->frequency->description ?? '')
                             ];
                         }
-                    }
-                    else {
+                    } else {
                         $prod = $tr->product;
                         $items[] = [
                             'name' => $tr->name,
@@ -816,12 +795,11 @@ class QueueController extends Controller
                 }
             }
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json([
             'items' => $items
-                                ]);
-
+        ]);
     }
 
     public function getSessionBalanceLogs($sbId)
@@ -830,7 +808,7 @@ class QueueController extends Controller
         $currencySymbol = $it->queueTransaction->queue->branch->currency_symbol;
 
         $logs = QueueTransaction::forSessionBalanceLogs($it->queue_transaction_id, $sbId)->get();
-        return view('partials/queue/session-balance-logs', compact('logs', 'currencySymbol')); 
+        return view('partials/queue/session-balance-logs', compact('logs', 'currencySymbol'));
     }
 
     private function mapValues($q, $request)

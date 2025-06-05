@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Package extends Model
 {
     use HasFactory, SoftDeletes;
-    
+
     /* Relationships */
     public function packageProducts()
     {
@@ -20,12 +20,12 @@ class Package extends Model
     {
         return $this->hasMany(QueueTransaction::class);
     }
-    
+
     public function productType()
     {
         return $this->belongsTo(ProductType::class);
     }
-    
+
     public function productCategory()
     {
         return $this->belongsTo(ProductCategory::class);
@@ -42,7 +42,8 @@ class Package extends Model
     }
 
     /* Scopes */
-    public function scopeActive($query, $branchId, $typeId, $categoryId) {
+    public function scopeActive($query, $branchId, $typeId, $categoryId)
+    {
         if ($branchId) {
             $query = $query->where('packages.branch_id', $branchId);
         }
@@ -53,20 +54,31 @@ class Package extends Model
             $query = $query->where('packages.product_category_id', $categoryId);
         }
         return $query
-        ->join('branches as b', 'b.id', 'packages.branch_id')
-        ->join('product_categories as c', 'c.id', 'packages.product_category_id')
-        ->join('product_types as t', 't.id', 'packages.product_type_id')
-        ->Select(
-            'packages.id',
-            'packages.code',
-            'packages.name',
-            'packages.selling_price',
-            'packages.cost_price',
-            'packages.session_count',
-            'c.description as category',
-            't.description as type',
-            'b.description as branch',
-            'b.currency_symbol',
-        );
+            ->join('branches as b', 'b.id', 'packages.branch_id')
+            ->join('product_categories as c', 'c.id', 'packages.product_category_id')
+            ->join('product_types as t', 't.id', 'packages.product_type_id')
+            ->Select(
+                'packages.id',
+                'packages.code',
+                'packages.name',
+                'packages.selling_price',
+                'packages.cost_price',
+                'packages.session_count',
+                'c.description as category',
+                't.description as type',
+                'b.description as branch',
+                'b.currency_symbol',
+            );
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($package) {
+            if (!$package->isForceDeleting()) {
+                $package->packageProducts()->update(['deleted_at' => now()]);
+            } else {
+                $package->packageProducts()->forceDelete();
+            }
+        });
     }
 }

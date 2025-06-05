@@ -24,24 +24,24 @@ class PackageController extends Controller
         $branchId = $currentBranch ? $currentBranch->id : null;
         if ($request->ajax()) {
             $data = Package::active($branchId, $request->type, $request->category);
-                
+
             return Datatables::of($data)
-            ->filterColumn('type', function($query, $keyword) {
-                $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('category', function($query, $keyword) {
-                $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('branch', function($query, $keyword) {
-                $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('type', function ($query, $keyword) {
+                    $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('category', function ($query, $keyword) {
+                    $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('branch', function ($query, $keyword) {
+                    $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
 
         $types = ProductType::forDropdown()->get();
         $categories = ProductCategory::forDropdown()->get();
         $products = Product::forDropdown($branchId)->get();
-        return view('inventory-setup/packages', compact('types', 'categories', 'products')); 
+        return view('inventory-setup/packages', compact('types', 'categories', 'products'));
     }
 
     /**
@@ -55,9 +55,9 @@ class PackageController extends Controller
         try {
             $currentBranch = session('branch');
             if ($request->name && Product::where([['name', $request->name], ['branch_id', $currentBranch->id]])->exists()) {
-                return response()->json(['errMsg'=> 'Name already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Name already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -82,14 +82,14 @@ class PackageController extends Controller
             }
             $p->cost_price = $cost_price;
             $p->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New package has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New package has been created.']);
     }
 
     /**
@@ -102,15 +102,15 @@ class PackageController extends Controller
     {
         try {
             $p = Package::with([
-                'productType:id,description', 
+                'productType:id,description',
                 'productCategory:id,description',
                 'packageProducts:id,package_id,product_id,qty',
                 'packageProducts.product:id,name',
                 'creator:id,first_name,last_name',
                 'updator:id,first_name,last_name'
-                ])->find($id);
+            ])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['package' => $p]);
     }
@@ -126,7 +126,7 @@ class PackageController extends Controller
         try {
             $p = Package::with(['packageProducts:id,package_id,product_id,qty'])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['package' => $p]);
     }
@@ -141,17 +141,17 @@ class PackageController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $p = Package::find($id);
-            
+
             if ($request->name && Package::where([
                 ['name', $request->name],
                 ['branch_id', $p->branch_id],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Name already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Name already exists', 'isError' => true]);
             }
 
             $p->updated_by = \Auth::id();
@@ -159,7 +159,7 @@ class PackageController extends Controller
 
             $cost_price = 0;
             if (!empty($request->products)) {
-                    
+
                 $pIds = collect($request->products)->pluck('id');
                 $p->packageProducts()->whereNotIn('id', $pIds)->delete();
 
@@ -169,8 +169,7 @@ class PackageController extends Controller
                     if ($newProduct) {
                         $pp = new PackageProduct;
                         $pp->created_by = \Auth::id();
-                    }
-                    else {
+                    } else {
                         $pp = PackageProduct::find($prod['id']);
                     }
 
@@ -181,21 +180,20 @@ class PackageController extends Controller
 
                     $cost_price += (($pp->qty == null ? 1 : $pp->qty) * $pp->product->cost_price);
                 }
-            }
-            else {
+            } else {
                 $p->packageProducts()->delete();
             }
 
             $p->cost_price = $cost_price;
             $p->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Package has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Package has been updated.']);
     }
 
     /**
@@ -209,10 +207,10 @@ class PackageController extends Controller
         $p = Package::find($id);
 
         if ($p->transactions()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this package is used in a transaction.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this package is used in a transaction.', 'isError' => true]);
         }
         $p->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($p, $request)
