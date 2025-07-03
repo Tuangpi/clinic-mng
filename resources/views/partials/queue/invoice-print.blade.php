@@ -105,11 +105,11 @@
             <td>
                 <table width="100%" class="text-black">
                     @if (config('app.show_include_invoice_remarks'))
-                        <tr>
-                            <td class="pt-2">
-                                Remarks: <span id="remarks"></span>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td class="pt-2">
+                            Remarks: <span id="remarks"></span>
+                        </td>
+                    </tr>
                     @endif
                     <tr>
                         <td class="pt-2">
@@ -121,6 +121,9 @@
                     </tr>
                 </table>
             </td>
+        </tr>
+        <tr class="text-center pt-5">
+            <img src="{{ asset('images/Accuken-Payment QRCODE.jpg') }}" alt="QR Image" />
         </tr>
         <tr id="unofficialInvoice">
             <td class="text-center pt-5">
