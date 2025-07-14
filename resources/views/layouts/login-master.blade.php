@@ -16,7 +16,7 @@
     <div class="login-content">
         @yield('content')
         <div class="text-blue-900 text-center  mb-0">
-            &copy; 2025 Accuken Pte Ltd
+            &copy; 2025 Kenpet Medical Pte Ltd
         </div>
     </div>
 </div>

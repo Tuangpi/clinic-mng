@@ -122,13 +122,16 @@
                 </table>
             </td>
         </tr>
-        <tr class="text-center pt-5">
-            <img src="{{ asset('images/Accuken-Payment QRCODE.jpg') }}" alt="QR Image" />
+        <tr>
+            <td class="text-center pt-5">
+                <img src="{{ asset('assets/images/Accuken-Payment QRCODE.jpg') }}" width="100px" alt="QR Image" />
+            </td>
         </tr>
-        <tr id="unofficialInvoice">
+        <!-- <tr id="unofficialInvoice">
+
             <td class="text-center pt-5">
                 * This is an unofficial invoice for checking purposes only *
             </td>
-        </tr>
+        </tr> -->
     </tbody>
 </table>
