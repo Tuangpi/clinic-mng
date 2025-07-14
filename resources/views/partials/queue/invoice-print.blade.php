@@ -2,20 +2,22 @@
     <thead style="border-bottom: 1px solid #000">
         <tr>
             <td>
-                <strong class="branch"></strong><br />
+                <!-- <strong class="branch"></strong><br /> -->
+                <strong>International Centre for Men's Health</strong><br />
                 <small>
-                    <span id="branchAddress"></span><br />
-                    Tel1: <span id="branchTelNo"></span>
+                    <!-- <span id="branchAddress"></span><br /> -->
+                    <span>Licence Number: L/25M0266/MDS/001/252</span><br />
+                    <!-- Tel1: <span id="branchTelNo"></span> -->
                 </small>
             </td>
         </tr>
-        <tr>
+        <!-- <tr>
             <td>
                 <small class="float-end">
                     Co Reg No : <span id="branchCoRegNo"></span>
                 </small>
             </td>
-        </tr>
+        </tr> -->
     </thead>
     <tbody>
         <tr>
@@ -121,6 +123,9 @@
                     </tr>
                 </table>
             </td>
+        </tr>
+        <tr>
+            <td class="pt-50px fs-8px"><span>Accuken Medical Pte Ltd - 201924610W</td>
         </tr>
         <tr>
             <td class="text-center pt-5">
