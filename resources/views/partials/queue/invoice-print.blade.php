@@ -3,7 +3,7 @@
         <tr>
             <td>
                 <!-- <strong class="branch"></strong><br /> -->
-                <strong>International Centre for Men's Health</strong><br />
+                <strong class="fs-20px">International Centre for Men's Health</strong><br />
                 <small>
                     <!-- <span id="branchAddress"></span><br /> -->
                     <span>Licence Number: L/25M0266/MDS/001/252</span><br />
@@ -117,19 +117,24 @@
                         <td class="pt-2">
                             All Cheques should be crossed and made payable to:<br />
                             <strong class="branch"></strong><br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img src="{{ asset('assets/images/Accuken-Payment QRCODE.jpg') }}" width="100px"
+                                alt="QR Image" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fs-8px"><span>Accuken Medical Pte Ltd - 201924610W</td>
+                    </tr>
+                    <tr>
+                        <td>
                             *All sales are final and Non-Refundable, Non-Exchangeable and Non-Transferable.*<br />
                             This is a computer generated invoice which does not require a signature
                         </td>
                     </tr>
                 </table>
-            </td>
-        </tr>
-        <tr>
-            <td class="pt-50px fs-8px"><span>Accuken Medical Pte Ltd - 201924610W</td>
-        </tr>
-        <tr>
-            <td class="text-center pt-5">
-                <img src="{{ asset('assets/images/Accuken-Payment QRCODE.jpg') }}" width="100px" alt="QR Image" />
             </td>
         </tr>
         <!-- <tr id="unofficialInvoice">
