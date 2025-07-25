@@ -126,7 +126,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="fs-8px"><span>Accuken Medical Pte Ltd - 201924610W</td>
+                        <td class="fs-8px"><span>Accuken Medical Pte Ltd</td>
                     </tr>
                     <tr>
                         <td>
