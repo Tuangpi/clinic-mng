@@ -238,7 +238,7 @@ class QueueController extends Controller
                 if (!empty($request->transactions)) {
 
                     $tIds = collect($request->transactions)->pluck('id');
-                    $q->transactions()->whereNotIn('id', $tIds)->delete();
+                    $q->transactions()->whereNotIn('id', $tIds)->forceDelete();
 
                     $overallDiscAmount = $q->overall_disc_amount;
                     $pxCredit = $q->px_credit;
@@ -369,13 +369,13 @@ class QueueController extends Controller
                         }
                     }
                 } else {
-                    $q->transactions()->delete();
+                    $q->transactions()->forceDelete();
                 }
 
                 if (!empty($request->payments)) {
 
                     $pIds = collect($request->payments)->pluck('id');
-                    $q->payments()->whereNotIn('id', $pIds)->delete();
+                    $q->payments()->whereNotIn('id', $pIds)->forceDelete();
 
                     foreach ($request->payments as $payment) {
                         $newPayment = $payment['id'] == '0';
@@ -395,7 +395,7 @@ class QueueController extends Controller
                         $p->save();
                     }
                 } else {
-                    $q->payments()->delete();
+                    $q->payments()->forceDelete();
                 }
             }
 
@@ -418,7 +418,7 @@ class QueueController extends Controller
     public function destroy($id)
     {
         $q = Queue::find($id);
-        $q->delete();
+        $q->forceDelete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
@@ -460,7 +460,7 @@ class QueueController extends Controller
             }
 
             if ($t->incompleteTransaction && $t->incompleteTransaction->transactions->count() == 0) {
-                $t->incompleteTransaction->delete();
+                $t->incompleteTransaction->forceDelete();
             }
 
             if ($t->amount_to_pay > 0) {

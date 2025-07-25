@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Dosage;
 use DataTables;
+
 class DosageController extends Controller
 {
     /**
@@ -17,9 +18,9 @@ class DosageController extends Controller
     {
         if ($request->ajax()) {
             $data = Dosage::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +34,9 @@ class DosageController extends Controller
     {
         try {
             if ($request->description && Dosage::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +45,14 @@ class DosageController extends Controller
             $d->updated_by = $currentUserId;
 
             $this->mapValues($d, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Dosage has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Dosage has been created.']);
     }
 
     /**
@@ -65,7 +66,7 @@ class DosageController extends Controller
         try {
             $d = Dosage::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['data' => $d]);
     }
@@ -84,22 +85,22 @@ class DosageController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $d = Dosage::find($id);
             $d->updated_by = \Auth::id();
             $this->mapValues($d, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Dosage has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Dosage has been updated.']);
     }
 
     /**
@@ -111,13 +112,15 @@ class DosageController extends Controller
     public function destroy($id)
     {
         $d = Dosage::find($id);
-        if ($d->products()->exists() ||
+        if (
+            $d->products()->exists() ||
             $d->queueTransactions()->exists() ||
-            $d->queueTransactionProducts()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this usage is in use.', 'isError'=> true]);
+            $d->queueTransactionProducts()->exists()
+        ) {
+            return response()->json(['errMsg' => 'Unable to delete, this usage is in use.', 'isError' => true]);
         }
-        $d->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $d->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($d, $request)

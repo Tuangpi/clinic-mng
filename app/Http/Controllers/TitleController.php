@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Title;
 use DataTables;
+
 class TitleController extends Controller
 {
     /**
@@ -17,9 +18,9 @@ class TitleController extends Controller
     {
         if ($request->ajax()) {
             $data = Title::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +34,9 @@ class TitleController extends Controller
     {
         try {
             if ($request->description && Title::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +45,14 @@ class TitleController extends Controller
             $t->updated_by = $currentUserId;
 
             $this->mapValues($t, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Title has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Title has been created.']);
     }
 
     /**
@@ -65,7 +66,7 @@ class TitleController extends Controller
         try {
             $t = Title::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['data' => $t]);
     }
@@ -84,22 +85,22 @@ class TitleController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $t = Title::find($id);
             $t->updated_by = \Auth::id();
             $this->mapValues($t, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Title has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Title has been updated.']);
     }
 
     /**
@@ -112,10 +113,10 @@ class TitleController extends Controller
     {
         $t = Title::find($id);
         if ($t->patients()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this title is in use.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this title is in use.', 'isError' => true]);
         }
-        $t->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $t->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($t, $request)

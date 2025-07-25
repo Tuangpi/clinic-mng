@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\CaseType;
 use DataTables;
+
 class CaseTypeController extends Controller
 {
     /**
@@ -17,9 +18,9 @@ class CaseTypeController extends Controller
     {
         if ($request->ajax()) {
             $data = CaseType::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +34,9 @@ class CaseTypeController extends Controller
     {
         try {
             if ($request->description && CaseType::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +45,14 @@ class CaseTypeController extends Controller
             $ct->updated_by = $currentUserId;
 
             $this->mapValues($ct, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Case Type has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Case Type has been created.']);
     }
 
     /**
@@ -65,7 +66,7 @@ class CaseTypeController extends Controller
         try {
             $ct = CaseType::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['data' => $ct]);
     }
@@ -84,22 +85,22 @@ class CaseTypeController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $ct = CaseType::find($id);
             $ct->updated_by = \Auth::id();
             $this->mapValues($ct, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Case Type has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Case Type has been updated.']);
     }
 
     /**
@@ -112,10 +113,10 @@ class CaseTypeController extends Controller
     {
         $ct = CaseType::find($id);
         if ($ct->caseNotes()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this case type is in use.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this case type is in use.', 'isError' => true]);
         }
-        $ct->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $ct->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($ct, $request)

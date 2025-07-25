@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\ProductCategory;
 use DataTables;
+
 class ProductCategoryController extends Controller
 {
     /**
@@ -17,9 +18,9 @@ class ProductCategoryController extends Controller
     {
         if ($request->ajax()) {
             $data = ProductCategory::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +34,9 @@ class ProductCategoryController extends Controller
     {
         try {
             if ($request->description && ProductCategory::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +45,14 @@ class ProductCategoryController extends Controller
             $c->updated_by = $currentUserId;
 
             $this->mapValues($c, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New product category has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New product category has been created.']);
     }
 
     /**
@@ -65,7 +66,7 @@ class ProductCategoryController extends Controller
         try {
             $c = ProductCategory::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['data' => $c]);
     }
@@ -84,22 +85,22 @@ class ProductCategoryController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $c = ProductCategory::find($id);
             $c->updated_by = \Auth::id();
             $this->mapValues($c, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Product category has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Product category has been updated.']);
     }
 
     /**
@@ -111,12 +112,14 @@ class ProductCategoryController extends Controller
     public function destroy($id)
     {
         $c = ProductCategory::find($id);
-        if ($c->products()->exists() ||
-            $c->packages()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this category is in use.', 'isError'=> true]);
+        if (
+            $c->products()->exists() ||
+            $c->packages()->exists()
+        ) {
+            return response()->json(['errMsg' => 'Unable to delete, this category is in use.', 'isError' => true]);
         }
-        $c->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $c->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($c, $request)

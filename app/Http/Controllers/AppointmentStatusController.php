@@ -17,9 +17,9 @@ class AppointmentStatusController extends Controller
     {
         if ($request->ajax()) {
             $data = AppointmentStatus::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +33,9 @@ class AppointmentStatusController extends Controller
     {
         try {
             if ($request->description && AppointmentStatus::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Status already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Status already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +44,14 @@ class AppointmentStatusController extends Controller
             $as->updated_by = $currentUserId;
 
             $this->mapValues($as, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Status has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Status has been created.']);
     }
 
     /**
@@ -65,7 +65,7 @@ class AppointmentStatusController extends Controller
         try {
             $as = AppointmentStatus::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['status' => $as]);
     }
@@ -86,22 +86,22 @@ class AppointmentStatusController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $as = AppointmentStatus::find($id);
             $as->updated_by = \Auth::id();
             $this->mapValues($as, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Status has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Status has been updated.']);
     }
 
     /**
@@ -114,10 +114,10 @@ class AppointmentStatusController extends Controller
     {
         $as = AppointmentStatus::find($id);
         if ($as->appointments()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this status is in use.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this status is in use.', 'isError' => true]);
         }
-        $as->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $as->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($as, $request)

@@ -21,15 +21,15 @@ class UserController extends Controller
     {
         if ($request->ajax()) {
             $data = User::active();
-                
+
             return Datatables::of($data)
-            ->filterColumn('role', function($query, $keyword) {
-                $query->whereRaw("r.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('branch', function($query, $keyword) {
-                $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('role', function ($query, $keyword) {
+                    $query->whereRaw("r.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('branch', function ($query, $keyword) {
+                    $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
 
@@ -43,9 +43,9 @@ class UserController extends Controller
     {
         try {
             if ($request->email && User::where('email', $request->email)->exists()) {
-                return response()->json(['errMsg'=> 'Email already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Email already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -59,14 +59,14 @@ class UserController extends Controller
             if (!empty($request->branch) && !$u->is_administrator) {
                 $u->branches()->attach($request->branch);
             }
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New user has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New user has been created.']);
     }
 
     /**
@@ -82,9 +82,9 @@ class UserController extends Controller
                 'userRole:id,description',
                 'nationality:id,description',
                 'branches:id,description'
-                ])->find($id);
+            ])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['user' => $u]);
     }
@@ -101,7 +101,7 @@ class UserController extends Controller
             $u = User::with('branches:id,id')->find($id);
             $u->branch_ids = collect($u->branches)->pluck('id');
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['user' => $u]);
     }
@@ -120,30 +120,30 @@ class UserController extends Controller
                 ['email', $request->email],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Email already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Email already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $u = User::find($id);
             $u->updated_by = \Auth::id();
             $this->mapValues($u, $request);
-           
+
             if ($u->is_administrator) {
                 $u->branches()->detach();
             } else {
                 $u->branches()->sync($request->branch);
             }
-            
 
-            
+
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'User has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'User has been updated.']);
     }
 
     /**
@@ -156,10 +156,10 @@ class UserController extends Controller
     {
         $u = User::find($id);
         if (User::hasCreatedUpdatedRecord($id)->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this user has already created/updated a record.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this user has already created/updated a record.', 'isError' => true]);
         }
-        $u->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $u->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function changePassword()
@@ -170,17 +170,16 @@ class UserController extends Controller
     public function updatePassword(Request $request)
     {
         $user = \Auth::user();
-        
+
         if (\Hash::check($request->currentPassword, $user->password)) {
-            
+
             $user->password = \Hash::make($request->newPassword);
             $user->save();
             \Auth::guard()->login(\Auth::user());
+        } else {
+            return response()->json(['errMsg' => 'Incorrect current password.', 'isError' => true]);
         }
-        else {
-            return response()->json(['errMsg'=> 'Incorrect current password.', 'isError'=> true]);
-        }
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($u, $request)

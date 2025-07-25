@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Frequency;
 use DataTables;
+
 class FrequencyController extends Controller
 {
     /**
@@ -17,9 +18,9 @@ class FrequencyController extends Controller
     {
         if ($request->ajax()) {
             $data = Frequency::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +34,9 @@ class FrequencyController extends Controller
     {
         try {
             if ($request->description && Frequency::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +45,14 @@ class FrequencyController extends Controller
             $f->updated_by = $currentUserId;
 
             $this->mapValues($f, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Frequency has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Frequency has been created.']);
     }
 
     /**
@@ -65,7 +66,7 @@ class FrequencyController extends Controller
         try {
             $f = Frequency::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['data' => $f]);
     }
@@ -84,22 +85,22 @@ class FrequencyController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $f = Frequency::find($id);
             $f->updated_by = \Auth::id();
             $this->mapValues($f, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Frequency has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Frequency has been updated.']);
     }
 
     /**
@@ -111,13 +112,15 @@ class FrequencyController extends Controller
     public function destroy($id)
     {
         $f = Frequency::find($id);
-        if ($f->products()->exists() ||
+        if (
+            $f->products()->exists() ||
             $f->queueTransactions()->exists() ||
-            $f->queueTransactionProducts()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this usage is in use.', 'isError'=> true]);
+            $f->queueTransactionProducts()->exists()
+        ) {
+            return response()->json(['errMsg' => 'Unable to delete, this usage is in use.', 'isError' => true]);
         }
-        $f->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $f->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($f, $request)

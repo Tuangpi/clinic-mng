@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Uom;
 use DataTables;
+
 class UOMController extends Controller
 {
     /**
@@ -17,9 +18,9 @@ class UOMController extends Controller
     {
         if ($request->ajax()) {
             $data = Uom::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +34,9 @@ class UOMController extends Controller
     {
         try {
             if ($request->description && Uom::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +45,14 @@ class UOMController extends Controller
             $u->updated_by = $currentUserId;
 
             $this->mapValues($u, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New UOM has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New UOM has been created.']);
     }
 
     /**
@@ -65,7 +66,7 @@ class UOMController extends Controller
         try {
             $u = Uom::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['data' => $u]);
     }
@@ -84,22 +85,22 @@ class UOMController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $u = Uom::find($id);
             $u->updated_by = \Auth::id();
             $this->mapValues($u, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'UOM has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'UOM has been updated.']);
     }
 
     /**
@@ -111,14 +112,16 @@ class UOMController extends Controller
     public function destroy($id)
     {
         $u = Uom::find($id);
-        if ($u->products()->exists() ||
+        if (
+            $u->products()->exists() ||
             $u->productDosages()->exists() ||
             $u->queueTransactionDosages()->exists() ||
-            $u->queueTransactionProductDosages()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this UOM is in use.', 'isError'=> true]);
+            $u->queueTransactionProductDosages()->exists()
+        ) {
+            return response()->json(['errMsg' => 'Unable to delete, this UOM is in use.', 'isError' => true]);
         }
-        $u->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $u->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($u, $request)

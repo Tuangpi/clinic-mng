@@ -17,9 +17,9 @@ class TaxController extends Controller
     {
         if ($request->ajax()) {
             $data = Tax::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +33,9 @@ class TaxController extends Controller
     {
         try {
             if ($request->schemeNo && Tax::where('code', $request->schemeNo)->exists()) {
-                return response()->json(['errMsg'=> 'Scheme No. already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Scheme No. already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +44,14 @@ class TaxController extends Controller
             $t->updated_by = $currentUserId;
 
             $this->mapValues($t, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New tax scheme has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New tax scheme has been created.']);
     }
 
     /**
@@ -65,7 +65,7 @@ class TaxController extends Controller
         try {
             $t = Tax::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['tax' => $t]);
     }
@@ -84,22 +84,22 @@ class TaxController extends Controller
                 ['code', $request->schemeNo],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Scheme No. already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Scheme No. already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $t = Tax::find($id);
             $t->updated_by = \Auth::id();
             $this->mapValues($t, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Tax scheme has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Tax scheme has been updated.']);
     }
 
     /**
@@ -112,10 +112,10 @@ class TaxController extends Controller
     {
         $t = Tax::find($id);
         if ($t->purchaseOrders()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this tax scheme is in use.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this tax scheme is in use.', 'isError' => true]);
         }
-        $t->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $t->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($t, $request)

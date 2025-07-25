@@ -13,20 +13,20 @@ class PurchaseOrderFileController extends Controller
     {
         if ($request->ajax()) {
             $data = PurchaseOrderFile::byOrder($orderId);
-                
+
             return Datatables::of($data)
-            ->filterColumn('created_by', function($query, $keyword) {
-                $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('created_by', function ($query, $keyword) {
+                    $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
-    
+
     public function destroy($orderId, $id)
     {
         $pof = PurchaseOrderFile::find($id);
-        $pof->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $pof->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function download($orderId, $name)
@@ -34,7 +34,7 @@ class PurchaseOrderFileController extends Controller
         $file = PurchaseOrderFile::where([
             ['purchase_order_id', $orderId],
             ['name', $name]
-            ])->first();
+        ])->first();
         return \Storage::download('purchase-order-files/' . $name, $file->original_name);
     }
 
@@ -53,6 +53,6 @@ class PurchaseOrderFileController extends Controller
             $pof->save();
         }
 
-	    return response()->json(['success'=> 'true']);
+        return response()->json(['success' => 'true']);
     }
 }

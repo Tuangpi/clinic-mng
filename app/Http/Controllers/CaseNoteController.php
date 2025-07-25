@@ -20,15 +20,15 @@ class CaseNoteController extends Controller
     {
         if ($request->ajax()) {
             $data = CaseNote::byPatientAndCaseType($patientId, $request->case_type);
-                
+
             return Datatables::of($data)
-            ->filterColumn('created_by', function($query, $keyword) {
-                $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('case_type', function($query, $keyword) {
-                $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('created_by', function ($query, $keyword) {
+                    $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('case_type', function ($query, $keyword) {
+                    $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
 
@@ -51,14 +51,14 @@ class CaseNoteController extends Controller
             $cn->created_by = \Auth::id();
             $cn->updated_by = \Auth::id();
             $this->mapValues($cn, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New case note has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New case note has been created.']);
     }
 
     /**
@@ -73,11 +73,11 @@ class CaseNoteController extends Controller
             $cn = CaseNote::with([
                 'creator:id,first_name,last_name,photo_ext,updated_at',
                 'caseType:id,description'
-                ])
+            ])
                 ->withTrashed()
                 ->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['caseNote' => $cn]);
     }
@@ -93,7 +93,7 @@ class CaseNoteController extends Controller
         try {
             $cn = CaseNote::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['caseNote' => $cn]);
     }
@@ -114,14 +114,14 @@ class CaseNoteController extends Controller
             $cn = CaseNote::find($id);
             $cn->updated_by = \Auth::id();
             $this->mapValues($cn, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Case note has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Case note has been updated.']);
     }
 
     /**
@@ -133,15 +133,15 @@ class CaseNoteController extends Controller
     public function destroy($patientId, $id)
     {
         $cn = CaseNote::find($id);
-        $cn->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $cn->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function revert($patientId, $id)
     {
         $cn = CaseNote::withTrashed()->find($id);
         $cn->restore();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($cn, $request)
@@ -153,7 +153,7 @@ class CaseNoteController extends Controller
 
         $cn->save();
 
-        $cn->no = ($cn->is_draft ? 'D': 'C') . '-' . sprintf('%05d', $cn->id);
+        $cn->no = ($cn->is_draft ? 'D' : 'C') . '-' . sprintf('%05d', $cn->id);
 
         $cn->save();
 

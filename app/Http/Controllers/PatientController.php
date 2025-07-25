@@ -253,7 +253,7 @@ class PatientController extends Controller
             return response()->json(['errMsg' => 'Unable to delete, this patient has already an appointment record.', 'isError' => true]);
         }
 
-        $p->delete();
+        $p->forceDelete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

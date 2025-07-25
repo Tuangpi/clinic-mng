@@ -17,9 +17,9 @@ class CaseNoteTemplateController extends Controller
     {
         if ($request->ajax()) {
             $data = CaseNoteTemplate::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +33,9 @@ class CaseNoteTemplateController extends Controller
     {
         try {
             if ($request->description && CaseNoteTemplate::where('name', $request->name)->exists()) {
-                return response()->json(['errMsg'=> 'Name already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Name already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +44,14 @@ class CaseNoteTemplateController extends Controller
             $ct->updated_by = $currentUserId;
 
             $this->mapValues($ct, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Case Note Template has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Case Note Template has been created.']);
     }
 
     /**
@@ -65,7 +65,7 @@ class CaseNoteTemplateController extends Controller
         try {
             $ct = CaseNoteTemplate::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['caseNoteTemplate' => $ct]);
     }
@@ -84,22 +84,22 @@ class CaseNoteTemplateController extends Controller
                 ['name', $request->name],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Name already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Name already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $ct = CaseNoteTemplate::find($id);
             $ct->updated_by = \Auth::id();
             $this->mapValues($ct, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Case Note Template has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Case Note Template has been updated.']);
     }
 
     /**
@@ -111,8 +111,8 @@ class CaseNoteTemplateController extends Controller
     public function destroy($id)
     {
         $ct = CaseNoteTemplate::find($id);
-        $ct->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $ct->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function getDescription($id)
@@ -120,7 +120,7 @@ class CaseNoteTemplateController extends Controller
         try {
             $ct = CaseNoteTemplate::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['description' => $ct->description]);
     }

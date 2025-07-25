@@ -29,15 +29,15 @@ class PurchaseOrderController extends Controller
         if ($request->ajax()) {
             $data = PurchaseOrder::active($branchId, $request->startDate, $request->endDate, $request->supplier, $request->paymentStatus, $request->deliveryStatus);
             return Datatables::of($data)
-            ->filterColumn('supplier', function($query, $keyword) {
-                $query->whereRaw("s.name like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('item_count', function($query, $keyword) {
-                $query->whereRaw("(Select count(1) from purchase_order_products as pop 
+                ->filterColumn('supplier', function ($query, $keyword) {
+                    $query->whereRaw("s.name like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('item_count', function ($query, $keyword) {
+                    $query->whereRaw("(Select count(1) from purchase_order_products as pop
                 where pop.purchase_order_id = purchase_orders.id and pop.deleted_at is null) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('invoice_no', function($query, $keyword) {
-                $query->whereRaw("(
+                })
+                ->filterColumn('invoice_no', function ($query, $keyword) {
+                    $query->whereRaw("(
                     select
                     group_concat(
                         pop.invoice_no
@@ -45,11 +45,11 @@ class PurchaseOrderController extends Controller
                     from purchase_order_payments pop
                     where pop.deleted_at is null and pop.purchase_order_id = purchase_orders.id
                 ) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('branch', function($query, $keyword) {
-                $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                })
+                ->filterColumn('branch', function ($query, $keyword) {
+                    $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
 
 
@@ -57,7 +57,7 @@ class PurchaseOrderController extends Controller
         $products = Product::withStockForDropdown($branchId)->get();
         $paymentOptions = PaymentOption::forDropdown($branchId)->get();
         $taxes = Tax::forDropdown()->get();
-        return view('stock-management/purchase-orders', compact('products', 'suppliers', 'paymentOptions', 'taxes')); 
+        return view('stock-management/purchase-orders', compact('products', 'suppliers', 'paymentOptions', 'taxes'));
     }
 
     /**
@@ -70,7 +70,7 @@ class PurchaseOrderController extends Controller
     {
         try {
             $currentBranch = session('branch');
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -89,14 +89,14 @@ class PurchaseOrderController extends Controller
                 $p->products()->save($pop);
             }
             $p->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Order has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Order has been created.']);
     }
 
     /**
@@ -109,18 +109,20 @@ class PurchaseOrderController extends Controller
     {
         try {
             $po = PurchaseOrder::with([
-                'supplier:id,name', 
+                'supplier:id,name',
                 'products:id,purchase_order_id,product_id,qty,uom,unit_price,total_amount,delivered_qty,pending_qty',
                 'payments:id,purchase_order_id,payment_date,invoice_no,paid_amt,payment_option_id,ref_no,remarks',
                 'products.product:id,name',
                 'creator:id,first_name,last_name',
                 'updator:id,first_name,last_name'
-                ])->find($id);
+            ])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
-        return response()->json(['order' => $po,
-                                    'currencySymbol' => $po->branch->currency_symbol]);
+        return response()->json([
+            'order' => $po,
+            'currencySymbol' => $po->branch->currency_symbol
+        ]);
     }
 
     /**
@@ -134,10 +136,12 @@ class PurchaseOrderController extends Controller
         try {
             $po = PurchaseOrder::with(['products:id,purchase_order_id,product_id,qty,uom,unit_price,total_amount'])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
-        return response()->json(['order' => $po,
-                                    'currencySymbol' => $po->branch->currency_symbol]);
+        return response()->json([
+            'order' => $po,
+            'currencySymbol' => $po->branch->currency_symbol
+        ]);
     }
 
     /**
@@ -150,18 +154,18 @@ class PurchaseOrderController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $po = PurchaseOrder::find($id);
-            
+
             $po->updated_by = \Auth::id();
             $this->mapValues($po, $request);
 
             if (!empty($request->products)) {
-                    
+
                 $pIds = collect($request->products)->pluck('id');
-                $po->products()->whereNotIn('id', $pIds)->delete();
+                $po->products()->whereNotIn('id', $pIds)->forceDelete();
 
                 foreach ($request->products as $prod) {
                     $newProduct = $prod['id'] == '0';
@@ -169,8 +173,7 @@ class PurchaseOrderController extends Controller
                     if ($newProduct) {
                         $pop = new PurchaseOrderProduct;
                         $pop->created_by = \Auth::id();
-                    }
-                    else {
+                    } else {
                         $pop = PurchaseOrderProduct::find($prod['id']);
                     }
 
@@ -178,32 +181,31 @@ class PurchaseOrderController extends Controller
                     $pop->updated_by = \Auth::id();
                     $po->products()->save($pop);
                 }
+            } else {
+                $po->products()->forceDelete();
             }
-            else {
-                $po->products()->delete();
-            }
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Order has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Order has been updated.']);
     }
 
     public function updatePayment(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $po = PurchaseOrder::find($id);
-            
+
             if (!empty($request->payments)) {
-                    
+
                 $pIds = collect($request->payments)->pluck('id');
-                $po->payments()->whereNotIn('id', $pIds)->delete();
+                $po->payments()->whereNotIn('id', $pIds)->forceDelete();
 
                 foreach ($request->payments as $payment) {
                     $newPayment = $payment['id'] == '0';
@@ -211,8 +213,7 @@ class PurchaseOrderController extends Controller
                     if ($newPayment) {
                         $pop = new PurchaseOrderPayment;
                         $pop->created_by = \Auth::id();
-                    }
-                    else {
+                    } else {
                         $pop = PurchaseOrderPayment::find($payment['id']);
                     }
 
@@ -225,29 +226,28 @@ class PurchaseOrderController extends Controller
                     $pop->updated_by = \Auth::id();
                     $po->payments()->save($pop);
                 }
+            } else {
+                $po->payments()->forceDelete();
             }
-            else {
-                $po->payments()->delete();
-            }
-            
-            
+
+
             $po->paid_amount = $po->payments()->sum('paid_amt');
             $po->remaining_balance = $po->total_amount - $po->paid_amount;
-            
+
             if ($po->remaining_balance < 0) {
                 \DB::rollBack();
-                return response()->json(['errMsg'=> 'Unable to update payment, paid amt. exceeded the total amt.', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Unable to update payment, paid amt. exceeded the total amt.', 'isError' => true]);
             }
             $po->is_fully_paid =  ($po->remaining_balance == 0);
             $po->save();
 
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Order has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Order has been updated.']);
     }
 
     /**
@@ -261,15 +261,15 @@ class PurchaseOrderController extends Controller
         $po = PurchaseOrder::find($id);
 
         if ($po->deliveries()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to cancel, this order has a delivery record.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to cancel, this order has a delivery record.', 'isError' => true]);
         }
 
         if ($po->payments()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to cancel, this order has a payment record.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to cancel, this order has a payment record.', 'isError' => true]);
         }
 
-        $po->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $po->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($po, $request)
@@ -283,8 +283,7 @@ class PurchaseOrderController extends Controller
         if ($po->tax_id) {
             $po->tax_percentage = $request->taxPercentage;
             $po->tax_amount = $request->taxAmount;
-        }
-        else {
+        } else {
             $po->tax_percentage = null;
             $po->tax_amount = null;
         }

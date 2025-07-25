@@ -14,11 +14,11 @@ class CaseNoteCommentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-        public function index(Request $request, $caseNoteId)
+    public function index(Request $request, $caseNoteId)
     {
         if ($request->ajax()) {
             $comments = CaseNoteComment::byCaseNote($caseNoteId)->get();
-            return response()->json(['comments'=> $comments]);
+            return response()->json(['comments' => $comments]);
         }
     }
 
@@ -41,14 +41,14 @@ class CaseNoteCommentController extends Controller
             $cnc->user_id = \Auth::id();
             $cnc->message = $request->message;
             $cnc->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New comment has been saved.', 'id' => $cnc->id, 'commentDate' => $cnc->created_at]);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New comment has been saved.', 'id' => $cnc->id, 'commentDate' => $cnc->created_at]);
     }
     /**
      * Remove the specified resource from storage.
@@ -59,7 +59,7 @@ class CaseNoteCommentController extends Controller
     public function destroy($caseNoteId, $id)
     {
         $cnc = CaseNoteComment::find($id);
-        $cnc->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $cnc->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 }

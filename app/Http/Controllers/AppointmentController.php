@@ -21,7 +21,7 @@ class AppointmentController extends Controller
 {
     public function generalSetupIndex()
     {
-        return view('general-setup/appointment'); 
+        return view('general-setup/appointment');
     }
     /**
      * Display a listing of the resource.
@@ -34,33 +34,33 @@ class AppointmentController extends Controller
         $branchId = $currentBranch ? $currentBranch->id : null;
         if ($request->ajax()) {
             $data = Appointment::active($branchId);
-                
+
             return Datatables::of($data)
-            ->filterColumn('guest', function($query, $keyword) {
-                $query->whereRaw("concat(appointments.first_name, ' ', appointments.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('patient', function($query, $keyword) {
-                $query->whereRaw("concat(p.first_name, ' ', p.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('category', function($query, $keyword) {
-                $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('status', function($query, $keyword) {
-                $query->whereRaw("s.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('recurring', function($query, $keyword) {
-                $query->whereRaw("rt.description like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('branch', function($query, $keyword) {
-                $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('guest', function ($query, $keyword) {
+                    $query->whereRaw("concat(appointments.first_name, ' ', appointments.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('patient', function ($query, $keyword) {
+                    $query->whereRaw("concat(p.first_name, ' ', p.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('category', function ($query, $keyword) {
+                    $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('status', function ($query, $keyword) {
+                    $query->whereRaw("s.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('recurring', function ($query, $keyword) {
+                    $query->whereRaw("rt.description like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('branch', function ($query, $keyword) {
+                    $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
         $patients = Patient::forDropdown()->get();
         $categories = AppointmentCategory::forDropdown($branchId)->get();
         $statuses = AppointmentStatus::forDropdown()->get();
         $recurringTypes = RecurringType::select('id', 'description')
-                    ->get();
+            ->get();
         return view('appointments', compact('patients', 'categories', 'statuses', 'recurringTypes', 'currentBranch'));
     }
 
@@ -82,14 +82,14 @@ class AppointmentController extends Controller
             $a->created_by = \Auth::id();
             $a->updated_by = \Auth::id();
             $this->mapValues($a, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New appointment has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New appointment has been created.']);
     }
 
     /**
@@ -102,11 +102,11 @@ class AppointmentController extends Controller
     {
         try {
             $a = Appointment::with([
-                'patient:id,code,first_name,last_name,mobile_number', 
+                'patient:id,code,first_name,last_name,mobile_number',
                 'appointmentCategory:id,description,hex_color'
-                ])->find($id);
+            ])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['appointment' => $a]);
     }
@@ -130,7 +130,7 @@ class AppointmentController extends Controller
 
             return response()->json(['appointment' => $a]);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
     }
 
@@ -144,7 +144,7 @@ class AppointmentController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $a = Appointment::find($id);
@@ -152,14 +152,14 @@ class AppointmentController extends Controller
             $this->mapValues($a, $request);
 
             $a->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Appointment has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Appointment has been updated.']);
     }
 
     /**
@@ -171,8 +171,8 @@ class AppointmentController extends Controller
     public function destroy($id)
     {
         $p = Appointment::find($id);
-        $p->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $p->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function calendar(Request $request)
@@ -181,11 +181,11 @@ class AppointmentController extends Controller
         $branchId = $currentBranch ? $currentBranch->id : null;
         $appointments = Appointment::forCalendar($branchId, $request->start, $request->end, $request->status, $request->category)->get();
         if (!$request->ajax()) {
-            $appointments = $appointments->map(function($appointment) {
+            $appointments = $appointments->map(function ($appointment) {
                 $event = [
                     'id' => $appointment->id,
                     'resourceId' => $appointment->appointment_category_id,
-                    'title' => ($appointment->prefix ? $appointment->prefix . ' - ' : '') . ($appointment->patient_id ? $appointment->first_name . ' ' . $appointment->last_name : $appointment->guest_first_name . ' ' . $appointment->guest_last_name) ,
+                    'title' => ($appointment->prefix ? $appointment->prefix . ' - ' : '') . ($appointment->patient_id ? $appointment->first_name . ' ' . $appointment->last_name : $appointment->guest_first_name . ' ' . $appointment->guest_last_name),
                     'start' => $appointment->start_date,
                     'end' => $appointment->end_date,
                     'borderColor' => '#' . $appointment->status_color,
@@ -219,16 +219,15 @@ class AppointmentController extends Controller
                 }
                 return $event;
             });
-            
         }
-                        
+
         return response()->json($appointments);
     }
 
     public function updateStatus($id, $status)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $a = Appointment::find($id);
@@ -236,20 +235,20 @@ class AppointmentController extends Controller
             $a->appointment_status_id = $status;
 
             $a->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Appointment status has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Appointment status has been updated.']);
     }
 
     public function updateSchedule(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $a = Appointment::find($id);
@@ -258,20 +257,20 @@ class AppointmentController extends Controller
             $a->end_date = Carbon::parse($request->endDate);
 
             $a->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Schedule has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Schedule has been updated.']);
     }
-    
+
     public function createPatient(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $currentBranch = session('branch');
@@ -296,14 +295,14 @@ class AppointmentController extends Controller
             $a->patient_id = $p->id;
 
             $a->save();
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Patient has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Patient has been created.']);
     }
 
     private function mapValues($a, $request)
@@ -319,8 +318,7 @@ class AppointmentController extends Controller
             $a->first_name = null;
             $a->last_name = null;
             $a->mobile_no = null;
-        }
-        else {
+        } else {
             $a->first_name = $request->firstName;
             $a->last_name = $request->lastName;
             $a->mobile_no = $request->mobileNo;
@@ -329,13 +327,12 @@ class AppointmentController extends Controller
             $a->recurring_type_id = $request->recurring;
             $a->recurring_interval = $request->interval;
             $a->recurring_end_date = Carbon::parse($request->recurringEndDate);
-            $a->recurring_dow = RecurringTypeEnum::Weekly == $request->recurring ? $request->dow : null; 
-        }
-        else {
+            $a->recurring_dow = RecurringTypeEnum::Weekly == $request->recurring ? $request->dow : null;
+        } else {
             $a->recurring_type_id = null;
             $a->recurring_interval = null;
             $a->recurring_end_date = null;
-            $a->recurring_dow = null; 
+            $a->recurring_dow = null;
         }
 
         $a->save();

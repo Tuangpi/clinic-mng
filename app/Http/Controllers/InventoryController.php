@@ -188,7 +188,7 @@ class InventoryController extends Controller
         } else if ($p->transactions()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this item is used in a transaction.', 'isError' => true]);
         }
-        $p->delete();
+        $p->forceDelete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

@@ -13,20 +13,20 @@ class CaseNoteFileController extends Controller
     {
         if ($request->ajax()) {
             $data = CaseNoteFile::byCaseNote($caseNoteId);
-                
+
             return Datatables::of($data)
-            ->filterColumn('created_by', function($query, $keyword) {
-                $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('created_by', function ($query, $keyword) {
+                    $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
-    
+
     public function destroy($caseNoteId, $id)
     {
         $cnf = CaseNoteFile::find($id);
-        $cnf->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $cnf->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function download($name)
@@ -51,6 +51,6 @@ class CaseNoteFileController extends Controller
             $cnf->save();
         }
 
-	    return response()->json(['success'=> 'true']);
+        return response()->json(['success' => 'true']);
     }
 }

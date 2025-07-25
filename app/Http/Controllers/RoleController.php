@@ -18,9 +18,9 @@ class RoleController extends Controller
     {
         if ($request->ajax()) {
             $data = UserRole::active();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -34,9 +34,9 @@ class RoleController extends Controller
     {
         try {
             if ($request->description && UserRole::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -46,19 +46,19 @@ class RoleController extends Controller
 
             $this->mapValues($r, $request);
 
-            
+
             if (!empty($request->module)) {
                 $r->modules()->attach($request->module);
             }
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
         $roles = UserRole::select('id', 'description as text')->orderBy('description')->get();
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New role has been created.', 'roles' => $roles]);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New role has been created.', 'roles' => $roles]);
     }
 
     /**
@@ -73,7 +73,7 @@ class RoleController extends Controller
             $r = UserRole::with('modules:id,id')->find($id);
             $r->module_ids = collect($r->modules)->pluck('id');
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['role' => $r]);
     }
@@ -92,9 +92,9 @@ class RoleController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $r = UserRole::find($id);
@@ -103,19 +103,18 @@ class RoleController extends Controller
 
             if (!empty($request->module)) {
                 $r->modules()->sync($request->module);
-            }
-            else {
+            } else {
                 $r->modules()->detach();
             }
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
         $roles = UserRole::select('id', 'description as text')->orderBy('description')->get();
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Role has been updated.', 'roles' => $roles]);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Role has been updated.', 'roles' => $roles]);
     }
 
     /**
@@ -128,11 +127,11 @@ class RoleController extends Controller
     {
         $r = UserRole::find($id);
         if ($r->users()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this role is in use.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this role is in use.', 'isError' => true]);
         }
-        $r->delete();
+        $r->forceDelete();
         $roles = UserRole::select('id', 'description as text')->orderBy('description')->get();
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'roles' => $roles]);
+        return response()->json(['errMsg' => '', 'isError' => false, 'roles' => $roles]);
     }
 
     private function mapValues($r, $request)

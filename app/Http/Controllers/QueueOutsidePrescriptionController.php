@@ -21,15 +21,15 @@ class QueueOutsidePrescriptionController extends Controller
     {
         if ($request->ajax()) {
             $data = QueueOutsidePrescription::byQueue($queueId);
-                
+
             return Datatables::of($data)
-            ->filterColumn('created_by', function($query, $keyword) {
-                $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
-            })
-            ->filterColumn('case_type', function($query, $keyword) {
-                $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('created_by', function ($query, $keyword) {
+                    $query->whereRaw("concat(c.first_name, ' ', c.last_name) like ?", ["%{$keyword}%"]);
+                })
+                ->filterColumn('case_type', function ($query, $keyword) {
+                    $query->whereRaw("t.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
 
@@ -50,14 +50,14 @@ class QueueOutsidePrescriptionController extends Controller
             $op->created_by = \Auth::id();
             $op->updated_by = \Auth::id();
             $this->mapValues($op, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New outside prescription has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New outside prescription has been created.']);
     }
 
     /**
@@ -71,9 +71,8 @@ class QueueOutsidePrescriptionController extends Controller
         try {
             $qop = QueueOutsidePrescription::find($id);
             $medicines = QueueOutsidePrescriptionMedicine::where('queue_outside_prescription_id', $id)->select('id', 'description', 'dosage', 'remarks')->get();
-
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['medicines' => $medicines, 'is_draft' => $qop->is_draft]);
     }
@@ -94,14 +93,14 @@ class QueueOutsidePrescriptionController extends Controller
             $qop = QueueOutsidePrescription::find($id);
             $qop->updated_by = \Auth::id();
             $this->mapValues($qop, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Case note has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Case note has been updated.']);
     }
 
     /**
@@ -113,15 +112,15 @@ class QueueOutsidePrescriptionController extends Controller
     public function destroy($queueId, $id)
     {
         $qop = QueueOutsidePrescription::find($id);
-        $qop->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $qop->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function revert($queueId, $id)
     {
         $qop = QueueOutsidePrescription::withTrashed()->find($id);
         $qop->restore();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function print($queueId, $id)
@@ -133,8 +132,8 @@ class QueueOutsidePrescriptionController extends Controller
         $patient = $q->patient;
 
         return response()->json([
-            'branchName'=> $branch->description,
-            'branchAddress'=> $branch->address,
+            'branchName' => $branch->description,
+            'branchAddress' => $branch->address,
             'patientName' => $patient->fullName,
             'patientId' => $patient->code,
             'patientAddress' => $patient->address . ', ' . $patient->city->description . ', ' . $patient->city->state->description,
@@ -154,9 +153,9 @@ class QueueOutsidePrescriptionController extends Controller
         $op->save();
 
         if (!empty($request->medicines)) {
-                    
+
             $mIds = collect($request->medicines)->pluck('id');
-            $op->medicines()->whereNotIn('id', $mIds)->delete();
+            $op->medicines()->whereNotIn('id', $mIds)->forceDelete();
 
             foreach ($request->medicines as $medicine) {
                 $newMedicine = $medicine['id'] == '0';
@@ -165,8 +164,7 @@ class QueueOutsidePrescriptionController extends Controller
                     $m = new QueueOutsidePrescriptionMedicine;
                     $m->queue_outside_prescription_id = $op->id;
                     $m->created_by = \Auth::id();
-                }
-                else {
+                } else {
                     $m = QueueOutsidePrescriptionMedicine::find($medicine['id']);
                 }
 
@@ -176,9 +174,8 @@ class QueueOutsidePrescriptionController extends Controller
                 $m->updated_by = \Auth::id();
                 $m->save();
             }
-        }
-        else {
-            $op->medicines()->delete();
+        } else {
+            $op->medicines()->forceDelete();
         }
     }
 }

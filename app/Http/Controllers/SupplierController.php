@@ -19,16 +19,16 @@ class SupplierController extends Controller
     {
         if ($request->ajax()) {
             $data = Supplier::active();
-                
+
             return Datatables::of($data)
-            ->filterColumn('city', function($query, $keyword) {
-                $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('city', function ($query, $keyword) {
+                    $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
         $states = State::orderBy('description')->get();
 
-        return view('inventory-setup/suppliers', compact('states')); 
+        return view('inventory-setup/suppliers', compact('states'));
     }
 
     /**
@@ -41,25 +41,25 @@ class SupplierController extends Controller
     {
         try {
             if ($request->name && Supplier::where('name', $request->name)->exists()) {
-                return response()->json(['errMsg'=> 'Name already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Name already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
             $s = new Supplier;
-            
+
             $s->created_by = $currentUserId;
             $s->updated_by = $currentUserId;
             $this->mapValues($s, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New supplier has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New supplier has been created.']);
     }
 
     /**
@@ -74,9 +74,9 @@ class SupplierController extends Controller
             $s = Supplier::with([
                 'city:id,description,state_id',
                 'city.state:id,description'
-                ])->find($id);
+            ])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['supplier' => $s]);
     }
@@ -92,7 +92,7 @@ class SupplierController extends Controller
         try {
             $s = Supplier::with('city:id,state_id')->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['supplier' => $s]);
     }
@@ -107,16 +107,16 @@ class SupplierController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $s = Supplier::find($id);
-            
+
             if ($request->name && Supplier::where([
                 ['name', $request->name],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Name already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Name already exists', 'isError' => true]);
             }
 
             $s->updated_by = \Auth::id();
@@ -124,11 +124,11 @@ class SupplierController extends Controller
 
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Supplier has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Supplier has been updated.']);
     }
 
     /**
@@ -142,10 +142,10 @@ class SupplierController extends Controller
         $s = Supplier::find($id);
 
         if ($s->products()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this supplier is used in an item inventory.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this supplier is used in an item inventory.', 'isError' => true]);
         }
-        $s->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $s->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($s, $request)

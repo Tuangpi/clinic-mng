@@ -13,7 +13,7 @@ class AppointmentCategoryController extends Controller
     {
         $currentBranch = session('branch');
         $categories = AppointmentCategory::select('id', 'description as title')->orderBy('seq_no');
-        
+
         if ($currentBranch) {
             $categories = $categories->where('branch_id', $currentBranch->id);
         }
@@ -31,12 +31,12 @@ class AppointmentCategoryController extends Controller
         if ($request->ajax()) {
             $currentBranch = session('branch');
             $data = AppointmentCategory::forDropdown($currentBranch->id ?? null);
-                
+
             return Datatables::of($data)
-            ->filterColumn('branch', function($query, $keyword) {
-                $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('branch', function ($query, $keyword) {
+                    $query->whereRaw("b.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
     }
 
@@ -55,9 +55,9 @@ class AppointmentCategoryController extends Controller
                 ['description', $request->description],
                 ['branch_id', $currentBranch->id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Category already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Category already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -67,14 +67,14 @@ class AppointmentCategoryController extends Controller
             $ac->updated_by = $currentUserId;
 
             $this->mapValues($ac, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New category has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New category has been created.']);
     }
 
     /**
@@ -88,7 +88,7 @@ class AppointmentCategoryController extends Controller
         try {
             $ac = AppointmentCategory::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['category' => $ac]);
     }
@@ -110,22 +110,22 @@ class AppointmentCategoryController extends Controller
                 ['branch_id', $currentBranch->id],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $ac = AppointmentCategory::find($id);
             $ac->updated_by = \Auth::id();
             $this->mapValues($ac, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Category has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Category has been updated.']);
     }
 
     /**
@@ -138,10 +138,10 @@ class AppointmentCategoryController extends Controller
     {
         $ac = AppointmentCategory::find($id);
         if ($ac->appointments()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this category is in use.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this category is in use.', 'isError' => true]);
         }
-        $ac->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $ac->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($ac, $request)

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\Usage;
 use DataTables;
+
 class UsageController extends Controller
 {
     /**
@@ -17,9 +18,9 @@ class UsageController extends Controller
     {
         if ($request->ajax()) {
             $data = Usage::forDropdown();
-                
+
             return Datatables::of($data)
-            ->make(true);
+                ->make(true);
         }
     }
 
@@ -33,9 +34,9 @@ class UsageController extends Controller
     {
         try {
             if ($request->description && Usage::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -44,14 +45,14 @@ class UsageController extends Controller
             $u->updated_by = $currentUserId;
 
             $this->mapValues($u, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New Usage has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New Usage has been created.']);
     }
 
     /**
@@ -65,7 +66,7 @@ class UsageController extends Controller
         try {
             $u = Usage::find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['data' => $u]);
     }
@@ -84,22 +85,22 @@ class UsageController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $u = Usage::find($id);
             $u->updated_by = \Auth::id();
             $this->mapValues($u, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Usage has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Usage has been updated.']);
     }
 
     /**
@@ -111,13 +112,15 @@ class UsageController extends Controller
     public function destroy($id)
     {
         $u = Usage::find($id);
-        if ($u->products()->exists() ||
+        if (
+            $u->products()->exists() ||
             $u->queueTransactions()->exists() ||
-            $u->queueTransactionProducts()->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this usage is in use.', 'isError'=> true]);
+            $u->queueTransactionProducts()->exists()
+        ) {
+            return response()->json(['errMsg' => 'Unable to delete, this usage is in use.', 'isError' => true]);
         }
-        $u->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $u->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     private function mapValues($u, $request)

@@ -15,7 +15,7 @@ class PurchaseOrderProductController extends Controller
         try {
             $pop = PurchaseOrderProduct::with(['deliveries:id,purchase_order_product_id,delivery_date,dr_no,delivered_qty,pack_size,batch_no,expiry_date,remarks'])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['product' => $pop]);
     }
@@ -23,7 +23,7 @@ class PurchaseOrderProductController extends Controller
     public function update(Request $request, $orderId, $id)
     {
         try {
-            
+
             \DB::beginTransaction();
 
             $po = PurchaseOrder::find($orderId);
@@ -31,12 +31,12 @@ class PurchaseOrderProductController extends Controller
             $changedQty = 0;
 
             if (!empty($request->deliveries)) {
-                    
+
                 $dIds = collect($request->deliveries)->pluck('id');
                 $deletedDeliveries = $pop->deliveries()->whereNotIn('id', $dIds)->get();
                 foreach ($deletedDeliveries as $deletedDelivery) {
                     $changedQty -= $deletedDelivery->delivered_qty;
-                    $deletedDelivery->delete();
+                    $deletedDelivery->forceDelete();
                 }
 
                 foreach ($request->deliveries as $delivery) {
@@ -46,8 +46,7 @@ class PurchaseOrderProductController extends Controller
                     if ($newDelivery) {
                         $del = new PurchaseOrderProductDelivery;
                         $del->created_by = \Auth::id();
-                    }
-                    else {
+                    } else {
                         $del = PurchaseOrderProductDelivery::find($delivery['id']);
                         $qty -= $del->delivered_qty;
                     }
@@ -64,17 +63,16 @@ class PurchaseOrderProductController extends Controller
                     $del->updated_by = \Auth::id();
                     $pop->deliveries()->save($del);
                 }
-            }
-            else {
+            } else {
                 $changedQty -= $pop->deliveries()->sum('delivered_qty');
-                $pop->deliveries()->delete();
+                $pop->deliveries()->forceDelete();
             }
 
             $pop->delivered_qty = $pop->deliveries()->sum('delivered_qty');
             $pop->pending_qty = $pop->qty - $pop->delivered_qty;
             if ($pop->pending_qty < 0) {
                 \DB::rollBack();
-                return response()->json(['errMsg'=> 'Unable to update delivery, delivered qty. exceeded the ordered qty.', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Unable to update delivery, delivered qty. exceeded the ordered qty.', 'isError' => true]);
             }
             $pop->save();
             $pop->product->current_stock += $changedQty;
@@ -84,18 +82,17 @@ class PurchaseOrderProductController extends Controller
             if (!$notCompleted && !$po->is_delivery_completed) {
                 $po->is_delivery_completed = true;
                 $po->save();
-            }
-            else if ($notCompleted && $po->is_delivery_completed) {
+            } else if ($notCompleted && $po->is_delivery_completed) {
                 $po->is_delivery_completed = false;
                 $po->save();
             }
 
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Delivery has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Delivery has been updated.']);
     }
 }

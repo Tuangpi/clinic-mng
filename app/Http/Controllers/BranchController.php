@@ -18,16 +18,16 @@ class BranchController extends Controller
     {
         if ($request->ajax()) {
             $data = Branch::active();
-                
+
             return Datatables::of($data)
-            ->filterColumn('city', function($query, $keyword) {
-                $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
-            })
-            ->make(true);
+                ->filterColumn('city', function ($query, $keyword) {
+                    $query->whereRaw("c.description like ?", ["%{$keyword}%"]);
+                })
+                ->make(true);
         }
         $states = State::orderBy('description')->get();
 
-        return view('general-setup/branches', compact('states')); 
+        return view('general-setup/branches', compact('states'));
     }
 
     /**
@@ -40,9 +40,9 @@ class BranchController extends Controller
     {
         try {
             if ($request->description && Branch::where('description', $request->description)->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             $currentUserId = \Auth::id();
             \DB::beginTransaction();
 
@@ -51,14 +51,14 @@ class BranchController extends Controller
             $b->updated_by = $currentUserId;
 
             $this->mapValues($b, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'New branch has been created.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'New branch has been created.']);
     }
 
     /**
@@ -73,13 +73,13 @@ class BranchController extends Controller
             $b = Branch::with([
                 'city:id,description,state_id',
                 'city.state:id,description'
-                ])->find($id);
+            ])->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['branch' => $b]);
     }
-    
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -91,7 +91,7 @@ class BranchController extends Controller
         try {
             $b = Branch::with('city:id,state_id')->find($id);
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
         }
         return response()->json(['branch' => $b]);
     }
@@ -110,22 +110,22 @@ class BranchController extends Controller
                 ['description', $request->description],
                 ['id', '<>', $id]
             ])->exists()) {
-                return response()->json(['errMsg'=> 'Description already exists', 'isError'=> true]);
+                return response()->json(['errMsg' => 'Description already exists', 'isError' => true]);
             }
-            
+
             \DB::beginTransaction();
 
             $b = Branch::find($id);
             $b->updated_by = \Auth::id();
             $this->mapValues($b, $request);
-            
+
             \DB::commit();
         } catch (\Throwable $th) {
-            return response()->json(['errMsg'=> 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError'=> true]);
+            return response()->json(['errMsg' => 'An error has occured upon saving. Please check your connection or contact your system administrator. <br/><br/>Error Message:<br/>' . $th->getMessage(), 'isError' => true]);
             \DB::rollBack();
         }
 
-        return response()->json(['errMsg'=> '', 'isError'=> false, 'message' => 'Branch has been updated.']);
+        return response()->json(['errMsg' => '', 'isError' => false, 'message' => 'Branch has been updated.']);
     }
 
     /**
@@ -138,10 +138,10 @@ class BranchController extends Controller
     {
         $b = Branch::find($id);
         if (Branch::hasCreatedUpdatedRecord($id)->exists()) {
-            return response()->json(['errMsg'=> 'Unable to delete, this branch is in use.', 'isError'=> true]);
+            return response()->json(['errMsg' => 'Unable to delete, this branch is in use.', 'isError' => true]);
         }
-        $b->delete();
-        return response()->json(['errMsg'=> '', 'isError'=> false]);
+        $b->forceDelete();
+        return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
     public function switch($id)
@@ -152,8 +152,7 @@ class BranchController extends Controller
                 return back();
             }
             $branch = null;
-        }
-        else {
+        } else {
             if (!$user->is_administrator && !$user->branches()->where('branch_id', $id)->exists()) {
                 return back();
             }
