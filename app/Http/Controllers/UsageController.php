@@ -119,7 +119,7 @@ class UsageController extends Controller
         ) {
             return response()->json(['errMsg' => 'Unable to delete, this usage is in use.', 'isError' => true]);
         }
-        $u->forceDelete();
+        $u->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

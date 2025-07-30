@@ -140,7 +140,7 @@ class AppointmentCategoryController extends Controller
         if ($ac->appointments()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this category is in use.', 'isError' => true]);
         }
-        $ac->forceDelete();
+        $ac->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

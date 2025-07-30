@@ -42,7 +42,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         try {
-            if ($request->email && User::where('email', $request->email)->exists()) {
+            if ($request->email && User::where('email', $request->email)->whereNull("deleted_at")->exists()) {
                 return response()->json(['errMsg' => 'Email already exists', 'isError' => true]);
             }
 
@@ -158,7 +158,7 @@ class UserController extends Controller
         if (User::hasCreatedUpdatedRecord($id)->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this user has already created/updated a record.', 'isError' => true]);
         }
-        $u->forceDelete();
+        $u->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

@@ -140,7 +140,7 @@ class BranchController extends Controller
         if (Branch::hasCreatedUpdatedRecord($id)->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this branch is in use.', 'isError' => true]);
         }
-        $b->forceDelete();
+        $b->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

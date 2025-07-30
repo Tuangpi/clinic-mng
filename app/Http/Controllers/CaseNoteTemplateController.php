@@ -111,7 +111,7 @@ class CaseNoteTemplateController extends Controller
     public function destroy($id)
     {
         $ct = CaseNoteTemplate::find($id);
-        $ct->forceDelete();
+        $ct->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

@@ -144,7 +144,7 @@ class SupplierController extends Controller
         if ($s->products()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this supplier is used in an item inventory.', 'isError' => true]);
         }
-        $s->forceDelete();
+        $s->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

@@ -119,7 +119,7 @@ class DosageController extends Controller
         ) {
             return response()->json(['errMsg' => 'Unable to delete, this usage is in use.', 'isError' => true]);
         }
-        $d->forceDelete();
+        $d->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

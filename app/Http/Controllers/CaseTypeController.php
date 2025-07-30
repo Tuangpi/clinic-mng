@@ -115,7 +115,7 @@ class CaseTypeController extends Controller
         if ($ct->caseNotes()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this case type is in use.', 'isError' => true]);
         }
-        $ct->forceDelete();
+        $ct->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

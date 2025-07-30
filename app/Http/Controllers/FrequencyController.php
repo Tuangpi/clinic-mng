@@ -119,7 +119,7 @@ class FrequencyController extends Controller
         ) {
             return response()->json(['errMsg' => 'Unable to delete, this usage is in use.', 'isError' => true]);
         }
-        $f->forceDelete();
+        $f->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

@@ -171,7 +171,7 @@ class AppointmentController extends Controller
     public function destroy($id)
     {
         $p = Appointment::find($id);
-        $p->forceDelete();
+        $p->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

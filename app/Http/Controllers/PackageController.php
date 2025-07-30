@@ -209,7 +209,7 @@ class PackageController extends Controller
         if ($p->transactions()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this package is used in a transaction.', 'isError' => true]);
         }
-        $p->forceDelete();
+        $p->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

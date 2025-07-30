@@ -133,7 +133,7 @@ class CaseNoteController extends Controller
     public function destroy($patientId, $id)
     {
         $cn = CaseNote::find($id);
-        $cn->forceDelete();
+        $cn->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

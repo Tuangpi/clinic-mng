@@ -129,7 +129,7 @@ class RoleController extends Controller
         if ($r->users()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this role is in use.', 'isError' => true]);
         }
-        $r->forceDelete();
+        $r->delete();
         $roles = UserRole::select('id', 'description as text')->orderBy('description')->get();
         return response()->json(['errMsg' => '', 'isError' => false, 'roles' => $roles]);
     }

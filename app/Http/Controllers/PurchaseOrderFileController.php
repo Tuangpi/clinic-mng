@@ -25,7 +25,7 @@ class PurchaseOrderFileController extends Controller
     public function destroy($orderId, $id)
     {
         $pof = PurchaseOrderFile::find($id);
-        $pof->forceDelete();
+        $pof->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

@@ -118,7 +118,7 @@ class ProductCategoryController extends Controller
         ) {
             return response()->json(['errMsg' => 'Unable to delete, this category is in use.', 'isError' => true]);
         }
-        $c->forceDelete();
+        $c->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

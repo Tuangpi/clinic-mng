@@ -131,7 +131,7 @@ class PaymentModeController extends Controller
         ) {
             return response()->json(['errMsg' => 'Unable to delete, this payment mode is in use.', 'isError' => true]);
         }
-        $po->forceDelete();
+        $po->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

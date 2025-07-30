@@ -36,7 +36,7 @@ class PurchaseOrderProductController extends Controller
                 $deletedDeliveries = $pop->deliveries()->whereNotIn('id', $dIds)->get();
                 foreach ($deletedDeliveries as $deletedDelivery) {
                     $changedQty -= $deletedDelivery->delivered_qty;
-                    $deletedDelivery->forceDelete();
+                    $deletedDelivery->delete();
                 }
 
                 foreach ($request->deliveries as $delivery) {
@@ -65,7 +65,7 @@ class PurchaseOrderProductController extends Controller
                 }
             } else {
                 $changedQty -= $pop->deliveries()->sum('delivered_qty');
-                $pop->deliveries()->forceDelete();
+                $pop->deliveries()->delete();
             }
 
             $pop->delivered_qty = $pop->deliveries()->sum('delivered_qty');

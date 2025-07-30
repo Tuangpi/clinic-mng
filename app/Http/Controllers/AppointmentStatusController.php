@@ -116,7 +116,7 @@ class AppointmentStatusController extends Controller
         if ($as->appointments()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this status is in use.', 'isError' => true]);
         }
-        $as->forceDelete();
+        $as->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

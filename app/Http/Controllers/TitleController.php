@@ -115,7 +115,7 @@ class TitleController extends Controller
         if ($t->patients()->exists()) {
             return response()->json(['errMsg' => 'Unable to delete, this title is in use.', 'isError' => true]);
         }
-        $t->forceDelete();
+        $t->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

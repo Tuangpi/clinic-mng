@@ -118,7 +118,7 @@ class ProductTypeController extends Controller
         ) {
             return response()->json(['errMsg' => 'Unable to delete, this type is in use.', 'isError' => true]);
         }
-        $t->forceDelete();
+        $t->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

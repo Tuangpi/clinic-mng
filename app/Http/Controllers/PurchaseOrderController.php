@@ -165,7 +165,7 @@ class PurchaseOrderController extends Controller
             if (!empty($request->products)) {
 
                 $pIds = collect($request->products)->pluck('id');
-                $po->products()->whereNotIn('id', $pIds)->forceDelete();
+                $po->products()->whereNotIn('id', $pIds)->delete();
 
                 foreach ($request->products as $prod) {
                     $newProduct = $prod['id'] == '0';
@@ -182,7 +182,7 @@ class PurchaseOrderController extends Controller
                     $po->products()->save($pop);
                 }
             } else {
-                $po->products()->forceDelete();
+                $po->products()->delete();
             }
 
             \DB::commit();
@@ -205,7 +205,7 @@ class PurchaseOrderController extends Controller
             if (!empty($request->payments)) {
 
                 $pIds = collect($request->payments)->pluck('id');
-                $po->payments()->whereNotIn('id', $pIds)->forceDelete();
+                $po->payments()->whereNotIn('id', $pIds)->delete();
 
                 foreach ($request->payments as $payment) {
                     $newPayment = $payment['id'] == '0';
@@ -227,7 +227,7 @@ class PurchaseOrderController extends Controller
                     $po->payments()->save($pop);
                 }
             } else {
-                $po->payments()->forceDelete();
+                $po->payments()->delete();
             }
 
 
@@ -268,7 +268,7 @@ class PurchaseOrderController extends Controller
             return response()->json(['errMsg' => 'Unable to cancel, this order has a payment record.', 'isError' => true]);
         }
 
-        $po->forceDelete();
+        $po->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

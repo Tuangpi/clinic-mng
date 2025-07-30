@@ -59,7 +59,7 @@ class CaseNoteCommentController extends Controller
     public function destroy($caseNoteId, $id)
     {
         $cnc = CaseNoteComment::find($id);
-        $cnc->forceDelete();
+        $cnc->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 }

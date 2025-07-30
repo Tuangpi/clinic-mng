@@ -25,7 +25,7 @@ class CaseNoteFileController extends Controller
     public function destroy($caseNoteId, $id)
     {
         $cnf = CaseNoteFile::find($id);
-        $cnf->forceDelete();
+        $cnf->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 

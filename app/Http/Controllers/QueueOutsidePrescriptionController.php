@@ -112,7 +112,7 @@ class QueueOutsidePrescriptionController extends Controller
     public function destroy($queueId, $id)
     {
         $qop = QueueOutsidePrescription::find($id);
-        $qop->forceDelete();
+        $qop->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
@@ -155,7 +155,7 @@ class QueueOutsidePrescriptionController extends Controller
         if (!empty($request->medicines)) {
 
             $mIds = collect($request->medicines)->pluck('id');
-            $op->medicines()->whereNotIn('id', $mIds)->forceDelete();
+            $op->medicines()->whereNotIn('id', $mIds)->delete();
 
             foreach ($request->medicines as $medicine) {
                 $newMedicine = $medicine['id'] == '0';
@@ -175,7 +175,7 @@ class QueueOutsidePrescriptionController extends Controller
                 $m->save();
             }
         } else {
-            $op->medicines()->forceDelete();
+            $op->medicines()->delete();
         }
     }
 }

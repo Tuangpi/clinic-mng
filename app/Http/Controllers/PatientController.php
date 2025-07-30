@@ -100,10 +100,10 @@ class PatientController extends Controller
     public function store(Request $request)
     {
         try {
-            if ($request->email && Patient::where('email', $request->email)->exists()) {
+            if ($request->email && Patient::where('email', $request->email)->whereNull("deleted_at")->exists()) {
                 return response()->json(['errMsg' => 'Email already exists', 'isError' => true]);
             }
-            if ($request->nric && Patient::where('nric', $request->nric)->exists()) {
+            if ($request->nric && Patient::where('nric', $request->nric)->whereNull("deleted_at")->exists()) {
                 return response()->json(['errMsg' => 'NRIC already exists', 'isError' => true]);
             }
 
@@ -253,7 +253,7 @@ class PatientController extends Controller
             return response()->json(['errMsg' => 'Unable to delete, this patient has already an appointment record.', 'isError' => true]);
         }
 
-        $p->forceDelete();
+        $p->delete();
         return response()->json(['errMsg' => '', 'isError' => false]);
     }
 
